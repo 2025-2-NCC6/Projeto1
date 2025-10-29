@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html class="light" lang="pt-br"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dashboard do Aluno</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#1193d4",
+            "background-light": "#f6f7f8",
+            "background-dark": "#101c22",
+          },
+          fontFamily: {
+            "display": ["Inter", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+<style>
+    .progress-ring__circle {
+      transition: stroke-dashoffset 0.35s;
+      transform: rotate(-90deg);
+      transform-origin: 50% 50%;
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-gray-800 dark:text-gray-200">
+<div class="flex h-screen flex-col">
+<header class="flex-shrink-0 bg-white dark:bg-background-dark shadow-md">
+<div class="container mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex h-16 items-center justify-between">
+<div class="flex items-center">
+<div class="flex-shrink-0">
+<span class="material-icons text-primary text-3xl">school</span>
+</div>
+<div class="hidden md:block">
+<div class="ml-4 flex items-baseline space-x-4">
+<a class="text-gray-800 dark:text-white font-bold text-xl" href="#">Instituição de Ensino</a>
+</div>
+</div>
+</div>
+<div class="flex items-center">
+<button class="relative rounded-full bg-white dark:bg-background-dark p-1 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-gray-100 dark:focus:ring-offset-background-dark" type="button">
+<span class="absolute -inset-1.5"></span>
+<span class="sr-only">Ver notificações</span>
+<span class="material-icons">notifications</span>
+</button>
+<div class="relative ml-3">
+<div>
+<button aria-expanded="false" aria-haspopup="true" class="relative flex max-w-xs items-center rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-gray-100 dark:focus:ring-offset-background-dark" id="user-menu-button" type="button">
+<span class="absolute -inset-1.5"></span>
+<span class="sr-only">Abrir menu do usuário</span>
+<img class="h-8 w-8 rounded-full" data-alt="Foto de perfil do usuário" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQex8WcA0XZdXsEfcNYWlf-Oa5q3jDaT5pDAG8A7vZqncS8Tk5TD5gqRo6UjDiaUCH-qpCRGTS9OhL5kTa4nTLEHDPTDvrFonqpPRZDAhL3Ne0DnXrTAcRnct_1G957-Ixz467q3Fe_m967XH_kBrD_CHy9jiXkl_yMmQ_3tuFZ0ygVkm-k7GYaa_OspPjED5mpaQN2Mywmvh303GJTyPO-PbuzsoPQZ_ZLcsIOUdagBThuz0AGXkQfIUv1BfEQ3d6WyFSyAZ2_hBU"/>
+</button>
+</div>
+</div>
+<div class="ml-3 text-right">
+<p class="text-sm font-medium text-gray-700 dark:text-white">João da Silva</p>
+<p class="text-xs font-medium text-gray-500 dark:text-gray-400">Aluno</p>
+</div>
+</div>
+</div>
+</div>
+</header>
+<main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+<div class="container mx-auto">
+<h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Meu Painel</h1>
+<div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+<div class="lg:col-span-2 space-y-6">
+<div class="bg-white dark:bg-gray-800/50 p-6 rounded-xl shadow">
+<h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">Sua Próxima Aula</h2>
+<p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Hoje, 10:00 - 12:00</p>
+<div class="bg-primary/10 dark:bg-primary/20 p-6 rounded-lg text-center">
+<p class="text-2xl font-bold text-primary mb-2">Cálculo Diferencial e Integral I</p>
+<p class="text-lg text-gray-700 dark:text-gray-200 mb-4">Prof. Dr. Arnaldo Cohen</p>
+<div class="flex items-center justify-center text-gray-600 dark:text-gray-300">
+<span class="material-icons mr-2">location_on</span>
+<span class="text-xl font-medium">Sala B-203</span>
+</div>
+</div>
+</div>
+<div>
+<h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Minhas Disciplinas</h2>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+<div class="bg-white dark:bg-gray-800/50 p-4 rounded-xl shadow hover:shadow-lg transition-shadow cursor-pointer">
+<div class="flex items-center space-x-4">
+<div class="flex-shrink-0 bg-primary/20 text-primary p-3 rounded-lg">
+<span class="material-icons">calculate</span>
+</div>
+<div>
+<h3 class="font-semibold text-gray-800 dark:text-white">Cálculo I</h3>
+<p class="text-sm text-gray-500 dark:text-gray-400">Prof. Arnaldo Cohen</p>
+</div>
+</div>
+</div>
+<div class="bg-white dark:bg-gray-800/50 p-4 rounded-xl shadow hover:shadow-lg transition-shadow cursor-pointer">
+<div class="flex items-center space-x-4">
+<div class="flex-shrink-0 bg-primary/20 text-primary p-3 rounded-lg">
+<span class="material-icons">code</span>
+</div>
+<div>
+<h3 class="font-semibold text-gray-800 dark:text-white">Algoritmos</h3>
+<p class="text-sm text-gray-500 dark:text-gray-400">Profa. Ada Lovelace</p>
+</div>
+</div>
+</div>
+<div class="bg-white dark:bg-gray-800/50 p-4 rounded-xl shadow hover:shadow-lg transition-shadow cursor-pointer">
+<div class="flex items-center space-x-4">
+<div class="flex-shrink-0 bg-primary/20 text-primary p-3 rounded-lg">
+<span class="material-icons">psychology</span>
+</div>
+<div>
+<h3 class="font-semibold text-gray-800 dark:text-white">Filosofia</h3>
+<p class="text-sm text-gray-500 dark:text-gray-400">Prof. Sócrates</p>
+</div>
+</div>
+</div>
+<div class="bg-white dark:bg-gray-800/50 p-4 rounded-xl shadow hover:shadow-lg transition-shadow cursor-pointer">
+<div class="flex items-center space-x-4">
+<div class="flex-shrink-0 bg-primary/20 text-primary p-3 rounded-lg">
+<span class="material-icons">biotech</span>
+</div>
+<div>
+<h3 class="font-semibold text-gray-800 dark:text-white">Biologia Celular</h3>
+<p class="text-sm text-gray-500 dark:text-gray-400">Profa. Marie Curie</p>
+</div>
+</div>
+</div>
+<div class="bg-white dark:bg-gray-800/50 p-4 rounded-xl shadow hover:shadow-lg transition-shadow cursor-pointer">
+<div class="flex items-center space-x-4">
+<div class="flex-shrink-0 bg-primary/20 text-primary p-3 rounded-lg">
+<span class="material-icons">gavel</span>
+</div>
+<div>
+<h3 class="font-semibold text-gray-800 dark:text-white">Direito Constitucional</h3>
+<p class="text-sm text-gray-500 dark:text-gray-400">Prof. Rui Barbosa</p>
+</div>
+</div>
+</div>
+<div class="bg-white dark:bg-gray-800/50 p-4 rounded-xl shadow hover:shadow-lg transition-shadow cursor-pointer">
+<div class="flex items-center space-x-4">
+<div class="flex-shrink-0 bg-primary/20 text-primary p-3 rounded-lg">
+<span class="material-icons">history_edu</span>
+</div>
+<div>
+<h3 class="font-semibold text-gray-800 dark:text-white">História Moderna</h3>
+<p class="text-sm text-gray-500 dark:text-gray-400">Prof. Marc Bloch</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="lg:col-span-1 space-y-6">
+<div class="bg-white dark:bg-gray-800/50 p-6 rounded-xl shadow">
+<h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Sua Frequência Geral</h2>
+<div class="flex flex-col items-center">
+<div class="relative">
+<svg class="h-40 w-40">
+<circle class="text-gray-200 dark:text-gray-700" cx="80" cy="80" fill="transparent" r="70" stroke="currentColor" stroke-width="10"></circle>
+<circle class="progress-ring__circle text-green-500" cx="80" cy="80" fill="transparent" r="70" stroke="currentColor" stroke-linecap="round" stroke-width="10" style="stroke-dasharray: 440; stroke-dashoffset: calc(440 - (440 * 92) / 100);"></circle>
+</svg>
+<div class="absolute top-0 left-0 h-full w-full flex items-center justify-center">
+<span class="text-3xl font-bold text-green-500">92%</span>
+</div>
+</div>
+<p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Ótimo trabalho!</p>
+<a class="mt-4 text-sm font-medium text-primary hover:underline" href="#">Ver Detalhes</a>
+</div>
+</div>
+<div class="bg-white dark:bg-gray-800/50 p-6 rounded-xl shadow">
+<h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Avisos Rápidos</h2>
+<ul class="space-y-4">
+<li class="flex items-start">
+<div class="flex-shrink-0">
+<span class="material-icons text-orange-500 mt-0.5">warning</span>
+</div>
+<div class="ml-3">
+<p class="text-sm font-medium text-gray-800 dark:text-gray-100">Cancelamento de aula</p>
+<p class="text-sm text-gray-600 dark:text-gray-300">A aula de Algoritmos de amanhã (25/10) foi cancelada.</p>
+</div>
+</li>
+<li class="flex items-start">
+<div class="flex-shrink-0">
+<span class="material-icons text-primary mt-0.5">info</span>
+</div>
+<div class="ml-3">
+<p class="text-sm font-medium text-gray-800 dark:text-gray-100">Prazo de Entrega</p>
+<p class="text-sm text-gray-600 dark:text-gray-300">O trabalho de Cálculo I deve ser entregue até 30/10.</p>
+</div>
+</li>
+<li class="flex items-start">
+<div class="flex-shrink-0">
+<span class="material-icons text-primary mt-0.5">campaign</span>
+</div>
+<div class="ml-3">
+<p class="text-sm font-medium text-gray-800 dark:text-gray-100">Palestra Especial</p>
+<p class="text-sm text-gray-600 dark:text-gray-300">Palestra sobre Inteligência Artificial no auditório principal, dia 05/11.</p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>
