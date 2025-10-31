@@ -1,14 +1,16 @@
 <!DOCTYPE html>
-<html class="light" lang="pt-BR"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Login - Automação de Salas de Aula</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com" rel="preconnect"/>
-<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
+<html class="light" lang="pt-BR">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Login - Automação de Salas de Aula</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet" />
+    <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
             theme: {
@@ -31,7 +33,7 @@
             },
         }
     </script>
-<style>
+    <style>
         .material-symbols-outlined {
             font-variation-settings:
                 'FILL' 0,
@@ -41,58 +43,159 @@
         }
     </style>
 </head>
+
 <body class="bg-background-light dark:bg-background-dark font-display">
-<div class="relative flex min-h-screen w-full flex-col items-center justify-center bg-cover bg-center group/design-root overflow-x-hidden" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBCY9Q9FIAJKBElmas80Lh8L2jALXttptUrAOe-lPZMx6vdzj-aAhBB5VzPKVdpEoz1ZXejxWES99AAXsTkr3hExbWrPA5V0S4s7-mx5P_4IoUuLI3ZZLg8nDr7_6bog1NBqmsJpEY7kJ6XoUlFFz2LjdLQru1LN_UP6xZ5eWZ0f245xtiZp-HAMsAxD9gvoUosCKSfZfuASO4qJWCGfqD3I071Jd5Sk8SpfI1r5WUV7HRjmnHTp6SzS5Iy94fvDJGTKn30rmg68P4N');">
-<div class="absolute inset-0 bg-black/30"></div>
-<div class="relative z-10 flex w-full max-w-md flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
-<div class="w-full flex flex-col items-center">
-<div class="w-full grow bg-white @container p-4 rounded-xl shadow-lg dark:bg-background-dark">
-<h1 class="text-[#111618] dark:text-white tracking-tight text-2xl font-bold leading-tight px-4 text-center pb-1 pt-4 font-display">Bem-vindo(a) de volta!</h1>
-<p class="text-gray-600 dark:text-gray-300 text-base font-normal leading-normal pb-4 px-4 text-center font-display">Acesse sua conta para continuar.</p>
-<div class="flex px-4 py-3">
-<div class="flex h-10 flex-1 items-center justify-center rounded-lg bg-background-light dark:bg-gray-800 p-1">
-<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 has-[:checked]:bg-white has-[:checked]:dark:bg-gray-700 has-[:checked]:shadow-[0_0_4px_rgba(0,0,0,0.1)] has-[:checked]:text-primary text-gray-500 dark:text-gray-400 text-sm font-medium leading-normal transition-all duration-200">
-<span class="truncate">Professor</span>
-<input checked="" class="invisible w-0" name="profile" type="radio" value="Professor"/>
-</label>
-<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 has-[:checked]:bg-white has-[:checked]:dark:bg-gray-700 has-[:checked]:shadow-[0_0_4px_rgba(0,0,0,0.1)] has-[:checked]:text-primary text-gray-500 dark:text-gray-400 text-sm font-medium leading-normal transition-all duration-200">
-<span class="truncate">Aluno</span>
-<input class="invisible w-0" name="profile" type="radio" value="Aluno"/>
-</label>
-<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 has-[:checked]:bg-white has-[:checked]:dark:bg-gray-700 has-[:checked]:shadow-[0_0_4px_rgba(0,0,0,0.1)] has-[:checked]:text-primary text-gray-500 dark:text-gray-400 text-sm font-medium leading-normal transition-all duration-200">
-<span class="truncate">Admin</span>
-<input class="invisible w-0" name="profile" type="radio" value="Administrador"/>
-</label>
-</div>
-</div>
-<div class="flex flex-col gap-4 px-4 pt-3 pb-4">
-<label class="flex flex-col w-full">
-<p class="text-[#111618] dark:text-gray-200 text-sm font-medium leading-normal pb-2">E-mail ou Usuário</p>
-<div class="flex w-full flex-1 items-stretch rounded-lg">
-<div class="text-gray-400 flex border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 items-center justify-center pl-4 rounded-l-lg border-r-0">
-<span class="material-symbols-outlined">person</span>
-</div>
-<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#111618] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:border-primary h-12 placeholder:text-gray-400 p-3 rounded-l-none text-base font-normal leading-normal" placeholder="Digite seu e-mail ou usuário" value=""/>
-</div>
-</label>
-<label class="flex flex-col w-full">
-<p class="text-[#111618] dark:text-gray-200 text-sm font-medium leading-normal pb-2">Senha</p>
-<div class="flex w-full flex-1 items-stretch rounded-lg">
-<div class="text-gray-400 flex border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 items-center justify-center pl-4 rounded-l-lg border-r-0">
-<span class="material-symbols-outlined">lock</span>
-</div>
-<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#111618] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:border-primary h-12 placeholder:text-gray-400 p-3 rounded-l-none rounded-r-none border-r-0 text-base font-normal leading-normal" placeholder="Digite sua senha" type="password" value=""/>
-<button aria-label="Mostrar/ocultar senha" class="text-gray-400 flex border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 items-center justify-center pr-4 rounded-r-lg border-l-0">
-<span class="material-symbols-outlined">visibility</span>
-</button>
-</div>
-</label>
-</div>
-<div class="px-4 pt-4 pb-6">
-<button class="w-full bg-primary text-white font-bold py-3 px-4 rounded-lg hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 ease-in-out font-display text-base">Entrar</button>
-</div>
-</div>
-</div>
-</div>
-</div>
-</body></html>
+    <div class="relative flex min-h-screen w-full flex-col items-center justify-center bg-cover bg-center group/design-root overflow-x-hidden"
+        style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBCY9Q9FIAJKBElmas80Lh8L2jALXttptUrAOe-lPZMx6vdzj-aAhBB5VzPKVdpEoz1ZXejxWES99AAXsTkr3hExbWrPA5V0S4s7-mx5P_4IoUuLI3ZZLg8nDr7_6bog1NBqmsJpEY7kJ6XoUlFFz2LjdLQru1LN_UP6xZ5eWZ0f245xtiZp-HAMsAxD9gvoUosCKSfZfuASO4qJWCGfqD3I071Jd5Sk8SpfI1r5WUV7HRjmnHTp6SzS5Iy94fvDJGTKn30rmg68P4N');">
+        <div class="absolute inset-0 bg-black/30"></div>
+        <div class="relative z-10 flex w-full max-w-md flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
+            <div class="w-full flex flex-col items-center">
+                <div class="w-full grow bg-white @container p-4 rounded-xl shadow-lg dark:bg-background-dark">
+                    <form id="login-form">
+                        <h1
+                            class="text-[#111618] dark:text-white tracking-tight text-2xl font-bold leading-tight px-4 text-center pb-1 pt-4 font-display">
+                            Bem-vindo(a) de volta!</h1>
+                        <p
+                            class="text-gray-600 dark:text-gray-300 text-base font-normal leading-normal pb-4 px-4 text-center font-display">
+                            Acesse sua conta para continuar.</p>
+
+                        <!-- NOTA: Este seletor de perfil é ignorado pelo back-end no login, -->
+                        <!-- o que é BOM para a segurança. O back-end é quem nos dirá o 'role'. -->
+                        <div class="flex px-4 py-3">
+                            <div
+                                class="flex h-10 flex-1 items-center justify-center rounded-lg bg-background-light dark:bg-gray-800 p-1">
+                                <label
+                                    class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 has-[:checked]:bg-white has-[:checked]:dark:bg-gray-700 has-[:checked]:shadow-[0_0_4px_rgba(0,0,0,0.1)] has-[:checked]:text-primary text-gray-500 dark:text-gray-400 text-sm font-medium leading-normal transition-all duration-200">
+                                    <span class="truncate">Professor</span>
+                                    <input checked="" class="invisible w-0" name="profile" type="radio"
+                                        value="Professor" />
+                                </label>
+                                <label
+                                    class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 has-[:checked]:bg-white has-[:checked]:dark:bg-gray-700 has-[:checked]:shadow-[0_0_4px_rgba(0,0,0,0.1)] has-[:checked]:text-primary text-gray-500 dark:text-gray-400 text-sm font-medium leading-normal transition-all duration-200">
+                                    <span class="truncate">Aluno</span>
+                                    <input class="invisible w-0" name="profile" type="radio" value="Aluno" />
+                                </label>
+                                <label
+                                    class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 has-[:checked]:bg-white has-[:checked]:dark:bg-gray-700 has-[:checked]:shadow-[0_0_4px_rgba(0,0,0,0.1)] has-[:checked]:text-primary text-gray-500 dark:text-gray-400 text-sm font-medium leading-normal transition-all duration-200">
+                                    <span class="truncate">Admin</span>
+                                    <input class="invisible w-0" name="profile" type="radio" value="Coordenador" />
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col gap-4 px-4 pt-3 pb-4">
+                            <label class="flex flex-col w-full">
+                                <p class="text-[#111618] dark:text-gray-200 text-sm font-medium leading-normal pb-2">
+                                    E-mail
+                                    ou Usuário</p>
+                                <div class="flex w-full flex-1 items-stretch rounded-lg">
+                                    <div
+                                        class="text-gray-400 flex border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 items-center justify-center w-12 rounded-l-lg border-r-0">
+                                        <span class="material-symbols-outlined">person</span>
+                                    </div>
+                                    <input id="email" type="email"
+                                        class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#111618] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:border-primary h-12 placeholder:text-gray-400 p-3 rounded-l-none text-base font-normal leading-normal"
+                                        placeholder="Digite seu e-mail" required value="" />
+                                </div>
+                            </label>
+                            <label class="flex flex-col w-full">
+                                <p class="text-[#111618] dark:text-gray-200 text-sm font-medium leading-normal pb-2">
+                                    Senha
+                                </p>
+                                <div class="flex w-full flex-1 items-stretch rounded-lg">
+                                    <div
+                                        class="text-gray-400 flex border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 items-center justify-center w-12 rounded-l-lg border-r-0">
+                                        <span class="material-symbols-outlined">lock</span>
+                                    </div>
+                                    <input id="password" type="password"
+                                        class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#111618] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:border-primary h-12 placeholder:text-gray-400 p-3 rounded-l-none rounded-r-none border-r-0 text-base font-normal leading-normal"
+                                        placeholder="Digite sua senha" required value="" />
+                                    <button aria-label="Mostrar/ocultar senha" type="button"
+                                        class="text-gray-400 flex border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 items-center justify-center w-12 rounded-r-lg border-l-0">
+                                        <span class="material-symbols-outlined">visibility</span>
+                                    </button>
+                                </div>
+                            </label>
+                        </div>
+
+                        <!-- Mensagem de Erro -->
+                        <p id="error-message" class="text-red-500 text-center text-sm px-4"></p>
+
+                        <div class="px-4 pt-4 pb-6">
+                            <button id="login-button" type="submit"
+                                class="w-full bg-primary text-white font-bold py-3 px-4 rounded-lg hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 ease-in-out font-display text-base">Entrar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <footer class="text-center mt-6">
+                <p class="text-base text-gray-200 dark:text-gray-300">
+                    Não possui uma conta?
+                    <a class="font-bold text-white hover:underline" href="./register.html">
+                        Cadastre-se
+                    </a>
+                </p>
+            </footer>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const loginForm = document.getElementById('login-form');
+            const errorMessage = document.getElementById('error-message');
+
+            loginForm.addEventListener('submit', async (event) => {
+                event.preventDefault(); // Impede o envio padrão do formulário
+                errorMessage.textContent = ''; // Limpa erros antigos
+
+                // 1. Pegar os dados dos inputs
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+
+                // 2. Enviar os dados para a API (seu server.js)
+                try {
+                    const response = await fetch('http://localhost:4000/api/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ email: email, password: password }),
+                    });
+
+                    const data = await response.json();
+
+                    // 3. Checar a resposta do servidor
+                    if (response.ok) {
+                        // SUCESSO!
+                        console.log('Login bem-sucedido:', data);
+
+                        // Salva os dados do usuário (opcional, mas útil)
+                        localStorage.setItem('user', JSON.stringify(data.user));
+
+                        // 4. Redirecionar com base no 'role' (função)
+                        // O servidor nos diz qual é o 'role' do usuário
+                        if (data.user.role === 'Professor') {
+                            window.location.href = './professor/index.html';
+                        } else if (data.user.role === 'Aluno') {
+                            window.location.href = './aluno/index.html';
+                        } else if (data.user.role === 'Coordenador') { // 'Coordenador' é o que está no seu schema.sql
+                            window.location.href = './admin/index.html';
+                        } else {
+                            errorMessage.textContent = 'Tipo de usuário desconhecido.';
+                        }
+                    } else {
+                        // ERRO! (Ex: senha errada, usuário não existe)
+                        errorMessage.textContent = data.error || 'Erro ao fazer login.';
+                    }
+                } catch (error) {
+                    // Erro de rede (servidor desligado, etc)
+                    console.error('Erro de rede:', error);
+                    errorMessage.textContent = 'Não foi possível conectar ao servidor.';
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

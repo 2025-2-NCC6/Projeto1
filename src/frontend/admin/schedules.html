@@ -4,35 +4,35 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Gerenciar Horários</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
 <script>
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#005A9C",
-                        "background-light": "#F4F6F8",
-                        "background-dark": "#101c22",
-                        "status-green": "#28A745",
-                        "status-yellow": "#FFC107",
-                        "status-red": "#DC3545",
-                        "status-blue": "#17A2B8",
-                    },
-                    fontFamily: {
-                        "display": ["Inter", "sans-serif"]
-                    },
-                    borderRadius: {
-                        "DEFAULT": "0.5rem",
-                        "lg": "0.75rem",
-                        "xl": "1rem",
-                        "full": "9999px"
-                    },
-                },
-            },
-        }
-    </script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#005A9C",
+                        "background-light": "#F4F6F8",
+                        "background-dark": "#101c22",
+                        "status-green": "#28A745",
+                        "status-yellow": "#FFC107",
+                        "status-red": "#DC3545",
+                        "status-blue": "#17A2B8",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.75rem",
+                        "xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
 </head>
 <body class="bg-background-light dark:bg-background-dark font-display">
 <div class="relative flex min-h-screen w-full flex-col">
@@ -56,15 +56,18 @@
 </div>
 <div class="flex items-center gap-4">
 <nav class="hidden md:flex items-center gap-6">
-<a class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary text-base font-medium" href="#">Dashboard</a>
-<a class="text-primary dark:text-blue-300 text-base font-bold" href="#">Horários</a>
-<a class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary text-base font-medium" href="#">Relatórios</a>
+    <a class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary text-base font-medium" 
+        href="./index.html">Dashboard</a>
+    <a class="text-primary dark:text-blue-300 text-base font-bold" 
+        href="./schedules.html">Horários</a>
+    <a class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary text-base font-medium" 
+        href="./notifications.html">Notificações</a>
 </nav>
 <div class="flex items-center gap-2">
 <button class="flex h-10 w-10 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600">
 <span class="material-symbols-outlined">
-                                notifications
-                            </span>
+                                notifications
+                            </span>
 </button>
 <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="User profile picture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDFr53nvJXhxdXmgx1fk0x9Dq49_mbq-svryvHnCSHgsD-16SHlijY-eopeiwao4eqJBqjCkfSCLPmnjo0jIr8v9E_gUhDkiC_x3RExIUfuwuu63LOTZ3zxg65tZlsYKB8ZuKvx9itHDsfNoC7jFyPbMUhU_oNfaH7I2ILuPTcmIfzSPvF8VhgsHT4nfcU5F687nodwGfUxbMoy3_DgQPgp0bOKqTpHGdIAYAnbf7zQw9RytVRT7ThBE_BjwneuuriUhKsAwsUTKskH");'></div>
 </div>
@@ -79,8 +82,8 @@
 </div>
 <a class="flex w-full sm:w-auto items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 text-white text-base font-semibold shadow-sm hover:bg-primary/90" href="#">
 <span class="material-symbols-outlined text-xl">add</span>
-                            Criar Novo Horário
-                        </a>
+                            Criar Novo Horário
+                        </a>
 </div>
 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-8">
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
