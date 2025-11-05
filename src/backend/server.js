@@ -81,7 +81,7 @@ app.post('/api/login', (req, res) => {
   }
 
   const sql = "SELECT * FROM Users WHERE email = ?";
-  
+
   // db.get() é para pegar UM ÚNICO item
   db.get(sql, [email], async (err, user) => {
     if (err) {
@@ -238,15 +238,29 @@ app.get('/api/rooms/:id', (req, res) => {
 
 // Rota principal da sua automação!
 app.put('/api/rooms/status/:id', (req, res) => {
-  const { status, current_course_id, lighting_intensity, ac_temperature, ac_on } = req.body;
+  // Adiciona 'lighting_scene' se você quiser salvar os botões (Apresentação, Leitura, etc)
+  const { status, current_course_id, lighting_intensity, ac_temperature, ac_on /*, lighting_scene */ } = req.body;
+
+  // Converte true/false do JS para 1/0 do SQLite
+  const acOnValue = ac_on === true ? 1 : (ac_on === false ? 0 : null);
+
   const sql = `UPDATE Rooms SET 
-                 status = ?, 
-                 current_course_id = ?, 
-                 lighting_intensity = ?, 
-                 ac_temperature = ?, 
-                 ac_on = ? 
-               WHERE id = ?`;
-  const params = [status, current_course_id, lighting_intensity, ac_temperature, ac_on, req.params.id];
+               status = COALESCE(?, status), 
+               current_course_id = COALESCE(?, current_course_id), 
+               lighting_intensity = COALESCE(?, lighting_intensity), 
+               ac_temperature = COALESCE(?, ac_temperature), 
+               ac_on = COALESCE(?, ac_on)
+               -- , lighting_scene = COALESCE(?, lighting_scene) -- Descomente se adicionar a coluna
+             WHERE id = ?`;
+  const params = [
+    status,
+    current_course_id,
+    lighting_intensity,
+    ac_temperature,
+    acOnValue,
+    // lighting_scene, // Descomente se adicionar
+    req.params.id
+  ];
   db.run(sql, params, function (err) {
     if (err) return res.status(500).json({ error: err.message });
     if (this.changes === 0) return res.status(404).json({ error: 'Sala não encontrada.' });
@@ -271,7 +285,7 @@ app.get('/api/schedules', (req, res) => {
   const sql = `
     SELECT 
       s.id, s.day_of_week, s.start_time, s.end_time,
-      c.name as course_name, r.name as room_name
+      c.name as course_name, r.name as room_name, c.professor_id
     FROM Schedules s
     JOIN Courses c ON s.course_id = c.id
     JOIN Rooms r ON s.room_id = r.id
@@ -318,10 +332,11 @@ app.get('/api/enrollments/student/:id', (req, res) => {
 // Pega todos os alunos de UM curso
 app.get('/api/enrollments/course/:id', (req, res) => {
   const sql = `
-    SELECT u.name as student_name, e.grade
+    SELECT u.id as student_id, u.name as student_name, e.grade
     FROM Enrollments e
     JOIN Users u ON e.student_id = u.id
     WHERE e.course_id = ? AND u.role = 'Aluno'
+    ORDER BY u.name
   `;
   db.all(sql, [req.params.id], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -336,7 +351,7 @@ app.post('/api/attendance', (req, res) => {
   // Esta rota será chamada pelo seu leitor RFID
   const { student_id, schedule_id, status } = req.body;
   const scan_timestamp = new Date().toISOString(); // Pega data e hora atual
-  
+
   const sql = "INSERT INTO AttendanceRecords (student_id, schedule_id, scan_timestamp, status) VALUES (?, ?, ?, ?)";
   db.run(sql, [student_id, schedule_id, scan_timestamp, status], function (err) {
     if (err) return res.status(500).json({ error: err.message });
@@ -360,6 +375,65 @@ app.get('/api/attendance/schedule/:id', (req, res) => {
 });
 
 
+// --- ROTA NOVA ADICIONADA ---
+/**
+ * Rota para salvar a presença MANUALMENTE (em massa) vinda do dashboard do professor
+ */
+app.post('/api/attendance/manual-bulk', (req, res) => {
+  const { schedule_id, attendance_list } = req.body;
+
+  if (!schedule_id || !Array.isArray(attendance_list)) {
+    return res.status(400).json({ error: 'Dados de requisição inválidos. Esperado "schedule_id" e "attendance_list".' });
+  }
+
+  const scan_timestamp = new Date().toISOString();
+
+  // Usamos 'INSERT OR REPLACE' para atualizar a presença se ela já foi marcada (ex: pelo RFID)
+  // ou inserir uma nova se não foi.
+  // Isso requer que a combinação (student_id, schedule_id) seja uma CHAVE ÚNICA (UNIQUE constraint)
+  // na sua tabela AttendanceRecords para funcionar corretamente.
+  const sql = `INSERT OR REPLACE INTO AttendanceRecords (student_id, schedule_id, scan_timestamp, status) 
+               VALUES (?, ?, ?, ?)`;
+
+  // Usamos db.serialize para garantir que as queries rodem em ordem
+  db.serialize(() => {
+    const stmt = db.prepare(sql);
+    let errors = [];
+
+    attendance_list.forEach(record => {
+      // Validação básica para evitar erros
+      if (record.student_id == null || record.status == null) {
+        console.warn('Registro de presença ignorado (dados incompletos):', record);
+        return; // Pula este registro
+      }
+
+      stmt.run(record.student_id, schedule_id, scan_timestamp, record.status, (err) => {
+        if (err) {
+          console.error('Erro ao inserir registro:', err.message);
+          errors.push(err.message);
+        }
+      });
+    });
+
+    stmt.finalize((err) => {
+      if (err) {
+        errors.push(err.message);
+      }
+
+      if (errors.length > 0) {
+        return res.status(500).json({
+          error: 'Ocorreram erros ao processar alguns registros de presença.',
+          details: errors
+        });
+      }
+
+      res.status(201).json({ message: `Presença registrada com sucesso para ${attendance_list.length} alunos.` });
+    });
+  });
+});
+// --- FIM DA ROTA NOVA ---
+
+
 // ----------------------------------------------------------------
 // --- Tabela: ClassEvents (Eventos de Aula)
 // ----------------------------------------------------------------
@@ -367,7 +441,7 @@ app.post('/api/events', (req, res) => {
   // Ex: Professor clica em "Iniciar Aula"
   const { schedule_id, professor_id, event_type } = req.body;
   const event_timestamp = new Date().toISOString();
-  
+
   const sql = "INSERT INTO ClassEvents (schedule_id, professor_id, event_timestamp, event_type) VALUES (?, ?, ?, ?)";
   db.run(sql, [schedule_id, professor_id, event_timestamp, event_type], function (err) {
     if (err) return res.status(500).json({ error: err.message });

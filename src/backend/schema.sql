@@ -51,10 +51,11 @@ CREATE TABLE AttendanceRecords (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     student_id INTEGER NOT NULL,
     schedule_id INTEGER NOT NULL,
-    scan_timestamp TEXT NOT NULL, -- Data e hora exata da leitura do RFID
+    scan_timestamp TEXT NOT NULL, 
     status TEXT NOT NULL CHECK(status IN ('Presente', 'Atrasado', 'Ausente')),
     FOREIGN KEY (student_id) REFERENCES Users (id),
-    FOREIGN KEY (schedule_id) REFERENCES Schedules (id)
+    FOREIGN KEY (schedule_id) REFERENCES Schedules (id),
+    UNIQUE(student_id, schedule_id) -- <--- ADICIONE ESTA LINHA
 );
 
 CREATE TABLE ClassEvents (
