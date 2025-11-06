@@ -32,11 +32,6 @@ const db = new sqlite3.Database(dbPath, (err) => {
 });
 
 // --- 4. Rotas de Autenticação (Com Criptografia) ---
-
-/**
- * Rota para REGISTRAR um novo usuário (Aluno, Professor, etc.)
- * Recebe a senha em texto plano, cria o HASH e salva no banco.
- */
 app.post('/api/register', async (req, res) => {
   const { name, email, password, rfid_tag_id, role } = req.body;
 
@@ -45,13 +40,11 @@ app.post('/api/register', async (req, res) => {
   }
 
   try {
-    // Gerar o "sal" e criar o hash da senha
     const salt = await bcrypt.genSalt(10);
     const password_hash = await bcrypt.hash(password, salt);
 
     const sql = `INSERT INTO Users (name, email, password_hash, rfid_tag_id, role) 
                  VALUES (?, ?, ?, ?, ?)`;
-    // Note que salvamos o 'password_hash', e não a senha original
     const params = [name, email, password_hash, rfid_tag_id, role];
 
     db.run(sql, params, function (err) {
@@ -69,10 +62,6 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-/**
- * Rota para LOGIN
- * Recebe email e senha, compara a senha com o HASH salvo no banco.
- */
 app.post('/api/login', (req, res) => {
   const { email, password } = req.body;
 
@@ -81,18 +70,15 @@ app.post('/api/login', (req, res) => {
   }
 
   const sql = "SELECT * FROM Users WHERE email = ?";
-
-  // db.get() é para pegar UM ÚNICO item
+  
   db.get(sql, [email], async (err, user) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
-    // Se o usuário não for encontrado...
     if (!user) {
       return res.status(404).json({ error: 'Usuário não encontrado.' });
     }
 
-    // Usuário encontrado, agora comparar as senhas
     try {
       const isMatch = await bcrypt.compare(password, user.password_hash);
 
@@ -100,7 +86,6 @@ app.post('/api/login', (req, res) => {
         return res.status(401).json({ error: 'Senha incorreta.' });
       }
 
-      // Se deu tudo certo!
       res.json({
         message: 'Login bem-sucedido!',
         user: {
@@ -109,7 +94,6 @@ app.post('/api/login', (req, res) => {
           email: user.email,
           role: user.role
         }
-        // Em um app real, aqui você geraria um Token JWT
       });
     } catch (error) {
       res.status(500).json({ error: 'Erro ao processar o login.' });
@@ -123,7 +107,6 @@ app.post('/api/login', (req, res) => {
 // ----------------------------------------------------------------
 // --- Tabela: Users (Gerenciamento)
 // ----------------------------------------------------------------
-// GET /api/users - Pega todos os usuários (sem a senha)
 app.get('/api/users', (req, res) => {
   db.all("SELECT id, name, email, rfid_tag_id, role FROM Users", [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -131,7 +114,6 @@ app.get('/api/users', (req, res) => {
   });
 });
 
-// GET /api/users/:id - Pega um usuário (sem a senha)
 app.get('/api/users/:id', (req, res) => {
   db.get("SELECT id, name, email, rfid_tag_id, role FROM Users WHERE id = ?", [req.params.id], (err, row) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -140,10 +122,8 @@ app.get('/api/users/:id', (req, res) => {
   });
 });
 
-// PUT /api/users/:id - Atualiza um usuário
 app.put('/api/users/:id', (req, res) => {
   const { name, email, role } = req.body;
-  // Nota: Não estamos permitindo atualizar senha ou rfid por aqui por simplicidade
   const sql = "UPDATE Users SET name = ?, email = ?, role = ? WHERE id = ?";
   db.run(sql, [name, email, role, req.params.id], function (err) {
     if (err) return res.status(500).json({ error: err.message });
@@ -152,7 +132,6 @@ app.put('/api/users/:id', (req, res) => {
   });
 });
 
-// DELETE /api/users/:id - Deleta um usuário
 app.delete('/api/users/:id', (req, res) => {
   db.run("DELETE FROM Users WHERE id = ?", [req.params.id], function (err) {
     if (err) return res.status(500).json({ error: err.message });
@@ -173,7 +152,6 @@ app.post('/api/courses', (req, res) => {
 });
 
 app.get('/api/courses', (req, res) => {
-  // JOIN para já trazer o nome do professor
   const sql = `
     SELECT c.id, c.name, c.professor_id, u.name as professor_name 
     FROM Courses c
@@ -228,6 +206,24 @@ app.get('/api/rooms', (req, res) => {
   });
 });
 
+// ### ROTA NOVA (para Painel Admin) ###
+app.get('/api/rooms/detailed', (req, res) => {
+    const sql = `
+        SELECT 
+            r.*,
+            c.name as course_name,
+            u.name as professor_name
+        FROM Rooms r
+        LEFT JOIN Courses c ON r.current_course_id = c.id
+        LEFT JOIN Users u ON c.professor_id = u.id
+    `;
+    db.all(sql, [], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+    });
+});
+
+
 app.get('/api/rooms/:id', (req, res) => {
   db.get("SELECT * FROM Rooms WHERE id = ?", [req.params.id], (err, row) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -236,12 +232,8 @@ app.get('/api/rooms/:id', (req, res) => {
   });
 });
 
-// Rota principal da sua automação!
 app.put('/api/rooms/status/:id', (req, res) => {
-  // Adiciona 'lighting_scene' se você quiser salvar os botões (Apresentação, Leitura, etc)
-  const { status, current_course_id, lighting_intensity, ac_temperature, ac_on /*, lighting_scene */ } = req.body;
-
-  // Converte true/false do JS para 1/0 do SQLite
+  const { status, current_course_id, lighting_intensity, ac_temperature, ac_on } = req.body;
   const acOnValue = ac_on === true ? 1 : (ac_on === false ? 0 : null);
 
   const sql = `UPDATE Rooms SET 
@@ -250,16 +242,14 @@ app.put('/api/rooms/status/:id', (req, res) => {
                lighting_intensity = COALESCE(?, lighting_intensity), 
                ac_temperature = COALESCE(?, ac_temperature), 
                ac_on = COALESCE(?, ac_on)
-               -- , lighting_scene = COALESCE(?, lighting_scene) -- Descomente se adicionar a coluna
              WHERE id = ?`;
   const params = [
-    status,
-    current_course_id,
-    lighting_intensity,
-    ac_temperature,
-    acOnValue,
-    // lighting_scene, // Descomente se adicionar
-    req.params.id
+      status, 
+      current_course_id, 
+      lighting_intensity, 
+      ac_temperature, 
+      acOnValue, 
+      req.params.id
   ];
   db.run(sql, params, function (err) {
     if (err) return res.status(500).json({ error: err.message });
@@ -281,10 +271,9 @@ app.post('/api/schedules', (req, res) => {
 });
 
 app.get('/api/schedules', (req, res) => {
-  // JOIN para trazer nomes do curso e sala
   const sql = `
     SELECT 
-      s.id, s.day_of_week, s.start_time, s.end_time,
+      s.id, s.day_of_week, s.start_time, s.end_time, s.course_id,
       c.name as course_name, r.name as room_name, c.professor_id
     FROM Schedules s
     JOIN Courses c ON s.course_id = c.id
@@ -295,6 +284,26 @@ app.get('/api/schedules', (req, res) => {
     res.json(rows);
   });
 });
+
+// ### ROTA NOVA (para Painel Admin) ###
+app.get('/api/schedules/detailed', (req, res) => {
+    const sql = `
+      SELECT 
+        s.id, s.day_of_week, s.start_time, s.end_time,
+        c.name as course_name, 
+        r.name as room_name,
+        u.name as professor_name
+      FROM Schedules s
+      JOIN Courses c ON s.course_id = c.id
+      JOIN Rooms r ON s.room_id = r.id
+      JOIN Users u ON c.professor_id = u.id
+    `;
+    db.all(sql, [], (err, rows) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json(rows);
+    });
+});
+
 
 app.delete('/api/schedules/:id', (req, res) => {
   db.run("DELETE FROM Schedules WHERE id = ?", [req.params.id], function (err) {
@@ -315,12 +324,17 @@ app.post('/api/enrollments', (req, res) => {
   });
 });
 
-// Pega todos os cursos de UM aluno
+// Rota modificada para Painel Aluno
 app.get('/api/enrollments/student/:id', (req, res) => {
   const sql = `
-    SELECT c.name as course_name, e.grade
+    SELECT 
+      c.name as course_name, 
+      c.id as course_id,
+      e.grade,
+      u.name as professor_name
     FROM Enrollments e
     JOIN Courses c ON e.course_id = c.id
+    JOIN Users u ON c.professor_id = u.id
     WHERE e.student_id = ?
   `;
   db.all(sql, [req.params.id], (err, rows) => {
@@ -329,7 +343,7 @@ app.get('/api/enrollments/student/:id', (req, res) => {
   });
 });
 
-// Pega todos os alunos de UM curso
+// Rota para Painel Professor
 app.get('/api/enrollments/course/:id', (req, res) => {
   const sql = `
     SELECT u.id as student_id, u.name as student_name, e.grade
@@ -348,10 +362,9 @@ app.get('/api/enrollments/course/:id', (req, res) => {
 // --- Tabela: AttendanceRecords (Presença)
 // ----------------------------------------------------------------
 app.post('/api/attendance', (req, res) => {
-  // Esta rota será chamada pelo seu leitor RFID
   const { student_id, schedule_id, status } = req.body;
-  const scan_timestamp = new Date().toISOString(); // Pega data e hora atual
-
+  const scan_timestamp = new Date().toISOString();
+  
   const sql = "INSERT INTO AttendanceRecords (student_id, schedule_id, scan_timestamp, status) VALUES (?, ?, ?, ?)";
   db.run(sql, [student_id, schedule_id, scan_timestamp, status], function (err) {
     if (err) return res.status(500).json({ error: err.message });
@@ -359,7 +372,6 @@ app.post('/api/attendance', (req, res) => {
   });
 });
 
-// Pega a lista de presença de uma aula (schedule)
 app.get('/api/attendance/schedule/:id', (req, res) => {
   const sql = `
     SELECT u.name as student_name, a.scan_timestamp, a.status
@@ -374,37 +386,26 @@ app.get('/api/attendance/schedule/:id', (req, res) => {
   });
 });
 
-
-// --- ROTA NOVA ADICIONADA ---
-/**
- * Rota para salvar a presença MANUALMENTE (em massa) vinda do dashboard do professor
- */
 app.post('/api/attendance/manual-bulk', (req, res) => {
   const { schedule_id, attendance_list } = req.body;
-
+  
   if (!schedule_id || !Array.isArray(attendance_list)) {
     return res.status(400).json({ error: 'Dados de requisição inválidos. Esperado "schedule_id" e "attendance_list".' });
   }
 
   const scan_timestamp = new Date().toISOString();
-
-  // Usamos 'INSERT OR REPLACE' para atualizar a presença se ela já foi marcada (ex: pelo RFID)
-  // ou inserir uma nova se não foi.
-  // Isso requer que a combinação (student_id, schedule_id) seja uma CHAVE ÚNICA (UNIQUE constraint)
-  // na sua tabela AttendanceRecords para funcionar corretamente.
+  
   const sql = `INSERT OR REPLACE INTO AttendanceRecords (student_id, schedule_id, scan_timestamp, status) 
                VALUES (?, ?, ?, ?)`;
 
-  // Usamos db.serialize para garantir que as queries rodem em ordem
   db.serialize(() => {
     const stmt = db.prepare(sql);
     let errors = [];
 
     attendance_list.forEach(record => {
-      // Validação básica para evitar erros
       if (record.student_id == null || record.status == null) {
-        console.warn('Registro de presença ignorado (dados incompletos):', record);
-        return; // Pula este registro
+          console.warn('Registro de presença ignorado (dados incompletos):', record);
+          return;
       }
 
       stmt.run(record.student_id, schedule_id, scan_timestamp, record.status, (err) => {
@@ -419,29 +420,68 @@ app.post('/api/attendance/manual-bulk', (req, res) => {
       if (err) {
         errors.push(err.message);
       }
-
+      
       if (errors.length > 0) {
-        return res.status(500).json({
-          error: 'Ocorreram erros ao processar alguns registros de presença.',
-          details: errors
-        });
+           return res.status(500).json({ 
+             error: 'Ocorreram erros ao processar alguns registros de presença.', 
+             details: errors 
+           });
       }
 
       res.status(201).json({ message: `Presença registrada com sucesso para ${attendance_list.length} alunos.` });
     });
   });
 });
-// --- FIM DA ROTA NOVA ---
+
+// Rota modificada para Painel Aluno
+app.get('/api/attendance/student/:id', (req, res) => {
+    const student_id = req.params.id;
+
+    // Lógica de frequência MODIFICADA
+    const totalSql = `
+        SELECT COUNT(*) as total_classes
+        FROM AttendanceRecords
+        WHERE student_id = ?
+    `;
+    
+    db.get(totalSql, [student_id], (err, totalResult) => {
+        if (err) return res.status(500).json({ error: err.message });
+
+        const total_classes = totalResult.total_classes;
+        if (total_classes === 0) {
+            return res.json({ total_classes: 0, present_classes: 0, percentage: 100 });
+        }
+
+        const presentSql = `
+            SELECT COUNT(*) as present_classes
+            FROM AttendanceRecords
+            WHERE student_id = ? 
+            AND status = 'Presente'
+        `;
+        
+        db.get(presentSql, [student_id], (err, presentResult) => {
+            if (err) return res.status(500).json({ error: err.message });
+            
+            const present_classes = presentResult.present_classes;
+            const percentage = Math.round((present_classes / total_classes) * 100);
+
+            res.json({
+                total_classes: total_classes,
+                present_classes: present_classes,
+                percentage: percentage
+            });
+        });
+    });
+});
 
 
 // ----------------------------------------------------------------
 // --- Tabela: ClassEvents (Eventos de Aula)
 // ----------------------------------------------------------------
 app.post('/api/events', (req, res) => {
-  // Ex: Professor clica em "Iniciar Aula"
   const { schedule_id, professor_id, event_type } = req.body;
   const event_timestamp = new Date().toISOString();
-
+  
   const sql = "INSERT INTO ClassEvents (schedule_id, professor_id, event_timestamp, event_type) VALUES (?, ?, ?, ?)";
   db.run(sql, [schedule_id, professor_id, event_timestamp, event_type], function (err) {
     if (err) return res.status(500).json({ error: err.message });
@@ -481,6 +521,39 @@ app.delete('/api/notices/:id', (req, res) => {
     if (this.changes === 0) return res.status(404).json({ error: 'Aviso não encontrado.' });
     res.json({ message: 'Aviso deletado com sucesso.' });
   });
+});
+
+// ### ROTA NOVA (para Painel Admin) ###
+app.delete('/api/notices/all', (req, res) => {
+    db.run("DELETE FROM Notices", [], function (err) {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ message: 'Todos os avisos foram arquivados.', changes: this.changes });
+    });
+});
+
+// ----------------------------------------------------------------
+// --- NOVAS ROTAS DE MÉTRICAS (para Painel Admin) ---
+// ----------------------------------------------------------------
+
+app.get('/api/metrics/attendance/overall', (req, res) => {
+    const totalSql = "SELECT COUNT(*) as total_records FROM AttendanceRecords";
+    db.get(totalSql, [], (err, totalResult) => {
+        if (err) return res.status(500).json({ error: err.message });
+        
+        const total_records = totalResult.total_records;
+        if (total_records === 0) {
+            return res.json({ percentage: 100 }); // Se não há registros, a presença é 100%
+        }
+
+        const presentSql = "SELECT COUNT(*) as present_records FROM AttendanceRecords WHERE status = 'Presente'";
+        db.get(presentSql, [], (err, presentResult) => {
+            if (err) return res.status(500).json({ error: err.message }); // Corrigido de 5G00 para 500
+            
+            const present_records = presentResult.present_records;
+            const percentage = Math.round((present_records / total_records) * 100);
+            res.json({ percentage: percentage });
+        });
+    });
 });
 
 

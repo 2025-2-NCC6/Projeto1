@@ -65,7 +65,7 @@
                 </div>
                 <div class="flex items-center gap-4">
 
-                    <div class="flex items-center gap-2" >
+                    <div class="flex items-center gap-2">
                         <a href="../index.html"
                             class="flex h-10 w-10 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600">
                             <span class="material-symbols-outlined ">
@@ -85,7 +85,8 @@
                         <div>
                             <h1 class="text-gray-800 dark:text-white tracking-tight text-3xl font-bold">Dashboard Geral
                             </h1>
-                            <p class="text-gray-500 dark:text-gray-400 mt-1">Olá, bem-vindo de volta!
+                            <!-- ID ADICIONADO -->
+                            <p id="admin-welcome" class="text-gray-500 dark:text-gray-400 mt-1">Olá, carregando...
                             </p>
                         </div>
                     </div>
@@ -101,8 +102,9 @@
                         </a>
                         <a class="relative bg-primary hover:bg-primary/90 dark:bg-blue-600 dark:hover:bg-blue-700 text-white rounded-lg shadow p-6 flex flex-col justify-between transition-all"
                             href="./notifications.html">
-                            <span
-                                class="absolute top-4 right-4 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold">3</span>
+                            <!-- ID ADICIONADO -->
+                            <span id="notification-badge"
+                                class="absolute top-4 right-4 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold">0</span>
                             <div>
                                 <span class="material-symbols-outlined text-4xl mb-3">notifications</span>
                                 <h3 class="text-xl font-bold">Notificações</h3>
@@ -117,42 +119,38 @@
                             </h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                                 <div class="flex flex-col">
-                                    <p class="text-gray-500 dark:text-gray-400 text-sm">Alunos Presentes</p>
-                                    <p class="text-2xl font-bold text-primary">342</p>
+                                    <p class="text-gray-500 dark:text-gray-400 text-sm">Total de Alunos</p>
+                                    <!-- ID ADICIONADO -->
+                                    <p id="metric-alunos" class="text-2xl font-bold text-primary">0</p>
                                 </div>
                                 <div class="flex flex-col">
                                     <p class="text-gray-500 dark:text-gray-400 text-sm">Professores Ativos</p>
-                                    <p class="text-2xl font-bold text-primary">28</p>
+                                    <!-- ID ADICIONADO -->
+                                    <p id="metric-professores" class="text-2xl font-bold text-primary">0</p>
                                 </div>
                                 <div class="flex flex-col">
                                     <p class="text-gray-500 dark:text-gray-400 text-sm">Média de Presença</p>
-                                    <p class="text-2xl font-bold text-status-green">92%</p>
+                                    <!-- ID ADICIONADO -->
+                                    <p id="metric-presenca" class="text-2xl font-bold text-status-green">0%</p>
                                 </div>
                                 <div class="flex flex-col">
-                                    <p class="text-gray-500 dark:text-gray-400 text-sm">Desempenho Geral</p>
-                                    <p class="text-2xl font-bold text-status-yellow">8.5/10</p>
+                                    <p class="text-gray-500 dark:text-gray-400 text-sm">Ocupação (Agora)</p>
+                                    <!-- ID ADICIONADO -->
+                                    <p id="metric-ocupacao" class="text-2xl font-bold text-status-yellow">0%</p>
                                 </div>
                             </div>
                         </div>
                         <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                            <div class="flex justify-between items-start mb-4">
-                                <div>
-                                    <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Consumo de
-                                        Energia</h3>
-                                    <p class="text-3xl font-bold text-gray-900 dark:text-white">150 kWh</p>
-                                    <div class="flex items-center gap-1 text-sm">
-                                        <p class="text-gray-500 dark:text-gray-400">Diário</p>
-                                        <p class="text-status-green font-medium flex items-center">
-                                            <span class="material-symbols-outlined text-base">arrow_downward</span> 5%
-                                            Economia
-                                        </p>
-                                    </div>
-                                </div>
-                                <select class="bg-gray-100 dark:bg-gray-700 border-none rounded-md text-sm">
-                                    <option>Diário</option>
-                                    <option>Semanal</option>
-                                    <option>Mensal</option>
-                                </select>
+                            <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Consumo de
+                                Energia (Estático)</h3>
+                            <!-- Conteúdo estático por enquanto -->
+                            <p class="text-3xl font-bold text-gray-900 dark:text-white">150 kWh</p>
+                            <div class="flex items-center gap-1 text-sm">
+                                <p class="text-gray-500 dark:text-gray-400">Diário</p>
+                                <p class="text-status-green font-medium flex items-center">
+                                    <span class="material-symbols-outlined text-base">arrow_downward</span> 5%
+                                    Economia
+                                </p>
                             </div>
                             <div class="h-48">
                                 <svg fill="none" height="100%" preserveAspectRatio="none" viewBox="0 0 475 150"
@@ -174,32 +172,24 @@
                             </div>
                         </div>
                         <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                            <div class="flex justify-between items-start mb-4">
-                                <div>
-                                    <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Ocupação das
-                                        Salas</h3>
-                                    <p class="text-3xl font-bold text-gray-900 dark:text-white">75%</p>
-                                    <div class="flex items-center gap-1 text-sm">
-                                        <p class="text-gray-500 dark:text-gray-400">Agora</p>
-                                        <p class="text-status-green font-medium flex items-center">
-                                            <span class="material-symbols-outlined text-base">arrow_upward</span> 10%
-                                        </p>
-                                    </div>
-                                </div>
-                                <select class="bg-gray-100 dark:bg-gray-700 border-none rounded-md text-sm">
-                                    <option>Agora</option>
-                                    <option>Hoje</option>
-                                    <option>Esta Semana</option>
-                                </select>
+                            <!-- Conteúdo estático por enquanto -->
+                            <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200">Ocupação das
+                                Salas (Estático)</h3>
+                            <p class="text-3xl font-bold text-gray-900 dark:text-white">75%</p>
+                            <div class="flex items-center gap-1 text-sm">
+                                <p class="text-gray-500 dark:text-gray-400">Agora</p>
+                                <p class="text-status-green font-medium flex items-center">
+                                    <span class="material-symbols-outlined text-base">arrow_upward</span> 10%
+                                </p>
                             </div>
                             <div class="h-48 flex items-center justify-center">
                                 <div class="relative w-40 h-40">
                                     <svg class="w-full h-full" viewBox="0 0 36 36">
                                         <path class="text-gray-200 dark:text-gray-700" d="M18 2.0845
-                  a 15.9155 15.9155 0 0 1 0 31.831
-                  a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="3"></path>
+                                a 15.9155 15.9155 0 0 1 0 31.831
+                                a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="3"></path>
                                         <path class="text-primary" d="M18 2.0845
-                  a 15.9155 15.9155 0 0 1 0 31.831" fill="none" stroke-dasharray="75, 100" stroke-linecap="round"
+                                a 15.9155 15.9155 0 0 1 0 31.831" fill="none" stroke-dasharray="75, 100" stroke-linecap="round"
                                             stroke-width="3"></path>
                                     </svg>
                                     <div class="absolute inset-0 flex flex-col items-center justify-center">
@@ -211,57 +201,10 @@
                         <div class="lg:col-span-4 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                             <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4">Status das Salas de
                                 Aula</h3>
-                            <div class="space-y-4 max-h-96 overflow-y-auto pr-2">
-                                <div
-                                    class="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50">
-                                    <div>
-                                        <p class="font-semibold text-gray-800 dark:text-white">Sala 101 - Bloco A</p>
-                                        <p class="text-sm text-gray-500 dark:text-gray-400">Cálculo I - Prof. Almeida
-                                        </p>
-                                    </div>
-                                    <div
-                                        class="flex items-center gap-2 px-3 py-1 rounded-full bg-status-green/10 text-status-green">
-                                        <span class="w-2 h-2 rounded-full bg-status-green"></span>
-                                        <p class="text-sm font-medium">Em Aula</p>
-                                    </div>
-                                </div>
-                                <div
-                                    class="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50">
-                                    <div>
-                                        <p class="font-semibold text-gray-800 dark:text-white">Laboratório de Química
-                                        </p>
-                                        <p class="text-sm text-gray-500 dark:text-gray-400">-</p>
-                                    </div>
-                                    <div
-                                        class="flex items-center gap-2 px-3 py-1 rounded-full bg-status-blue/10 text-status-blue">
-                                        <span class="w-2 h-2 rounded-full bg-status-blue"></span>
-                                        <p class="text-sm font-medium">Livre</p>
-                                    </div>
-                                </div>
-                                <div
-                                    class="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50">
-                                    <div>
-                                        <p class="font-semibold text-gray-800 dark:text-white">Sala 203 - Bloco B</p>
-                                        <p class="text-sm text-gray-500 dark:text-gray-400">Luz Ligada - Sala Vazia</p>
-                                    </div>
-                                    <div
-                                        class="flex items-center gap-2 px-3 py-1 rounded-full bg-status-yellow/10 text-status-yellow">
-                                        <span class="w-2 h-2 rounded-full bg-status-yellow"></span>
-                                        <p class="text-sm font-medium">Alerta</p>
-                                    </div>
-                                </div>
-                                <div
-                                    class="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50">
-                                    <div>
-                                        <p class="font-semibold text-gray-800 dark:text-white">Auditório Principal</p>
-                                        <p class="text-sm text-gray-500 dark:text-gray-400">Projetor com defeito</p>
-                                    </div>
-                                    <div
-                                        class="flex items-center gap-2 px-3 py-1 rounded-full bg-status-red/10 text-status-red">
-                                        <span class="w-2 h-2 rounded-full bg-status-red"></span>
-                                        <p class="text-sm font-medium">Manutenção</p>
-                                    </div>
-                                </div>
+                            <!-- ID ADICIONADO -->
+                            <div id="room-status-container" class="space-y-4 max-h-96 overflow-y-auto pr-2">
+                                <p class="text-gray-500 dark:text-gray-400">Carregando status das salas...</p>
+                                <!-- Conteúdo gerado por admin.js -->
                             </div>
                         </div>
                     </div>
@@ -269,6 +212,8 @@
             </main>
         </div>
     </div>
+    <!-- SCRIPT ADICIONADO -->
+    <script src="admin.js"></script>
 </body>
 
 </html>
