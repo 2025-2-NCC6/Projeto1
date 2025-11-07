@@ -59,8 +59,6 @@
                             class="text-gray-600 dark:text-gray-300 text-base font-normal leading-normal pb-4 px-4 text-center font-display">
                             Acesse sua conta para continuar.</p>
 
-                        <!-- NOTA: Este seletor de perfil é ignorado pelo back-end no login, -->
-                        <!-- o que é BOM para a segurança. O back-end é quem nos dirá o 'role'. -->
                         <div class="flex px-4 py-3">
                             <div
                                 class="flex h-10 flex-1 items-center justify-center rounded-lg bg-background-light dark:bg-gray-800 p-1">
@@ -118,8 +116,7 @@
                             </label>
                         </div>
 
-                        <!-- Mensagem de Erro -->
-                        <p id="error-message" class="text-red-500 text-center text-sm px-4"></p>
+                        <p id="error-message" class="text-red-500 text-center text-sm px-4 font-bold"></p>
 
                         <div class="px-4 pt-4 pb-6">
                             <button id="login-button" type="submit"
@@ -152,8 +149,10 @@
                 // 1. Pegar os dados dos inputs
                 const email = document.getElementById('email').value;
                 const password = document.getElementById('password').value;
+                // Captura qual perfil (radio button) está selecionado no momento do clique
+                const selectedProfile = document.querySelector('input[name="profile"]:checked').value;
 
-                // 2. Enviar os dados para a API (seu server.js)
+                // 2. Enviar os dados para a API
                 try {
                     const response = await fetch('http://localhost:4000/api/login', {
                         method: 'POST',
@@ -167,29 +166,36 @@
 
                     // 3. Checar a resposta do servidor
                     if (response.ok) {
-                        // SUCESSO!
-                        console.log('Login bem-sucedido:', data);
+                        // Login (email/senha) está correto. Agora validamos o perfil.
+                        console.log('Credenciais OK. Verificando perfil...');
 
-                        // Salva os dados do usuário (opcional, mas útil)
+                        // Se o perfil selecionado na tela NÃO for igual ao perfil real do usuário no banco
+                        if (data.user.role !== selectedProfile) {
+                            // Mostra erro e interrompe a função (return) para não redirecionar
+                            errorMessage.textContent = `Login inválido: Esta conta não é de ${selectedProfile}.`;
+                            return;
+                        }
+
+                        // Se chegou aqui, está tudo certo (email, senha e perfil).
+                        console.log('Login bem-sucedido:', data);
                         localStorage.setItem('user', JSON.stringify(data.user));
 
-                        // 4. Redirecionar com base no 'role' (função)
-                        // O servidor nos diz qual é o 'role' do usuário
+                        // 4. Redirecionar
                         if (data.user.role === 'Professor') {
                             window.location.href = './professor/index.html';
                         } else if (data.user.role === 'Aluno') {
                             window.location.href = './aluno/index.html';
-                        } else if (data.user.role === 'Coordenador') { // 'Coordenador' é o que está no seu schema.sql
+                        } else if (data.user.role === 'Coordenador') {
                             window.location.href = './admin/index.html';
                         } else {
                             errorMessage.textContent = 'Tipo de usuário desconhecido.';
                         }
                     } else {
-                        // ERRO! (Ex: senha errada, usuário não existe)
+                        // Erro vindo da API (ex: senha errada)
                         errorMessage.textContent = data.error || 'Erro ao fazer login.';
                     }
                 } catch (error) {
-                    // Erro de rede (servidor desligado, etc)
+                    // Erro de rede
                     console.error('Erro de rede:', error);
                     errorMessage.textContent = 'Não foi possível conectar ao servidor.';
                 }

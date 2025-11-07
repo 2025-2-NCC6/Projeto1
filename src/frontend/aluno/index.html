@@ -42,7 +42,7 @@
 
 <body class="bg-background-light dark:bg-background-dark font-display text-gray-800 dark:text-gray-200">
   <div class="flex h-screen flex-col">
-    <header class="flex-shrink-0 bg-white dark:bg-background-dark shadow-md">
+    <header class="flex-shrink-0 bg-white dark:bg-background-dark shadow-md z-10 relative">
       <div class="container mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex h-16 items-center justify-between">
           <div class="flex items-center">
@@ -63,20 +63,31 @@
               <span class="sr-only">Ver notificações</span>
               <span class="material-icons">notifications</span>
             </button>
+
             <div class="relative ml-3">
               <div>
-                <button aria-expanded="false" aria-haspopup="true"
-                  class="relative flex max-w-xs items-center rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-gray-100 dark:focus:ring-offset-background-dark"
-                  id="user-menu-button" type="button">
+                <button type="button"
+                  class="relative flex max-w-xs items-center rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+                  id="user-menu-button" aria-expanded="false" aria-haspopup="true">
                   <span class="absolute -inset-1.5"></span>
                   <span class="sr-only">Abrir menu do usuário</span>
-                  <img id="user-avatar" class="h-8 w-8 rounded-full" data-alt="Foto de perfil do usuário"
-                    src="https://placehold.co/32x32/1193d4/FFFFFF?text=A" />
+                  <img id="user-avatar" class="h-8 w-8 rounded-full"
+                    src="https://placehold.co/32x32/1193d4/FFFFFF?text=A" alt="">
                 </button>
               </div>
+
+              <div id="user-menu-dropdown"
+                class="hidden absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button" tabindex="-1">
+                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem"
+                  tabindex="-1" id="user-menu-item-0">Meu Perfil</a>
+                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem"
+                  tabindex="-1" id="user-menu-item-1">Configurações</a>
+                <a href="#" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 font-semibold" role="menuitem"
+                  tabindex="-1" id="btn-logout">Sair</a>
+              </div>
             </div>
-            <div class="ml-3 text-right">
-              <!-- IDs ADICIONADOS -->
+            <div class="ml-3 text-right hidden sm:block">
               <p id="student-name" class="text-sm font-medium text-gray-700 dark:text-white">Carregando...</p>
               <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Aluno</p>
             </div>
@@ -84,15 +95,14 @@
         </div>
       </div>
     </header>
-    <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+
+    <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 z-0">
       <div class="container mx-auto">
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Meu Painel</h1>
         <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div class="lg:col-span-2 space-y-6">
-            <!-- ID ADICIONADO AO CONTAINER DA PRÓXIMA AULA -->
             <div id="proxima-aula-container" class="bg-white dark:bg-gray-800/50 p-6 rounded-xl shadow">
               <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">Sua Próxima Aula</h2>
-              <!-- IDs ADICIONADOS AOS ELEMENTOS INTERNOS -->
               <p id="proxima-aula-horario" class="text-sm text-gray-500 dark:text-gray-400 mb-4">Carregando...</p>
               <div class="bg-primary/10 dark:bg-primary/20 p-6 rounded-lg text-center">
                 <p id="proxima-aula-nome" class="text-2xl font-bold text-primary mb-2">Buscando...</p>
@@ -105,10 +115,8 @@
             </div>
             <div>
               <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Minhas Disciplinas</h2>
-              <!-- ID ADICIONADO AO GRID DE DISCIPLINAS -->
               <div id="disciplinas-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <p class="text-sm text-gray-500 dark:text-gray-400">Carregando disciplinas...</p>
-                <!-- Conteúdo será gerado pelo aluno.js -->
               </div>
             </div>
           </div>
@@ -120,13 +128,11 @@
                   <svg class="h-40 w-40">
                     <circle class="text-gray-200 dark:text-gray-700" cx="80" cy="80" fill="transparent" r="70"
                       stroke="currentColor" stroke-width="10"></circle>
-                    <!-- ID ADICIONADO AO CÍRCULO DE PROGRESSO -->
-                    <circle id="frequencia-circulo" class="progress-ring__circle text-green-500" cx="80" cy="80" fill="transparent" r="70"
-                      stroke="currentColor" stroke-linecap="round" stroke-width="10"
+                    <circle id="frequencia-circulo" class="progress-ring__circle text-green-500" cx="80" cy="80"
+                      fill="transparent" r="70" stroke="currentColor" stroke-linecap="round" stroke-width="10"
                       style="stroke-dasharray: 440; stroke-dashoffset: 440;"></circle>
                   </svg>
                   <div class="absolute top-0 left-0 h-full w-full flex items-center justify-center">
-                    <!-- ID ADICIONADO AO TEXTO DE FREQUÊNCIA -->
                     <span id="frequencia-texto" class="text-3xl font-bold text-green-500">...</span>
                   </div>
                 </div>
@@ -135,10 +141,8 @@
             </div>
             <div class="bg-white dark:bg-gray-800/50 p-6 rounded-xl shadow">
               <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Avisos Rápidos</h2>
-              <!-- ID ADICIONADO À LISTA DE AVISOS -->
               <ul id="avisos-container" class="space-y-4">
                 <p class="text-sm text-gray-500 dark:text-gray-400">Carregando avisos...</p>
-                <!-- Conteúdo será gerado pelo aluno.js -->
               </ul>
             </div>
           </div>
@@ -147,8 +151,51 @@
     </main>
   </div>
 
-  <!-- SCRIPT ADICIONADO -->
   <script src="aluno.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Lógica do Menu Dropdown
+      const userMenuButton = document.getElementById('user-menu-button');
+      const userMenuDropdown = document.getElementById('user-menu-dropdown');
+
+      userMenuButton.addEventListener('click', () => {
+        const isExpanded = userMenuButton.getAttribute('aria-expanded') === 'true';
+        userMenuButton.setAttribute('aria-expanded', !isExpanded);
+        userMenuDropdown.classList.toggle('hidden');
+      });
+
+      // Fecha o menu se clicar fora dele
+      document.addEventListener('click', (event) => {
+        if (!userMenuButton.contains(event.target) && !userMenuDropdown.contains(event.target)) {
+          userMenuButton.setAttribute('aria-expanded', 'false');
+          userMenuDropdown.classList.add('hidden');
+        }
+      });
+
+      // Lógica de Logout
+      const btnLogout = document.getElementById('btn-logout');
+      btnLogout.addEventListener('click', (e) => {
+        e.preventDefault();
+        // 1. Limpa os dados do usuário do navegador
+        localStorage.removeItem('user');
+        // 2. Redireciona para a tela de login (ajuste o caminho se necessário)
+        window.location.href = '../index.html';
+      });
+
+      // Lógica de mostrar o nome do usuário (já estava no seu código, mantido aqui por garantia)
+      const userJson = localStorage.getItem('user');
+      if (userJson) {
+        const user = JSON.parse(userJson);
+        document.getElementById('student-name').textContent = user.nome || 'Aluno';
+        // Se quiser mostrar a primeira letra do nome no avatar:
+        // document.getElementById('user-avatar').src = `https://placehold.co/32x32/1193d4/FFFFFF?text=${user.nome.charAt(0).toUpperCase()}`;
+      } else {
+        // Se não estiver logado, manda pro login
+        window.location.href = '../index.html';
+      }
+    });
+  </script>
 </body>
 
 </html>

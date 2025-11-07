@@ -1,23 +1,50 @@
-// dashboard.js
+// dashboard.js (Professor)
 
 // --- CONFIGURAÇÃO ---
 const API_URL = 'http://localhost:4000/api';
 
-// IDs que deveriam ser dinâmicos (ex: vindos da página de login ou URL)
-// Por enquanto, vamos "chumbar" os valores para teste
-let CURRENT_USER_ID = 1; // ID do Professor (Ex: Dr. Ana Santos)
-let CURRENT_ROOM_ID = 1; // ID da Sala (Ex: Sala 205)
-let CURRENT_COURSE_ID = 1; // ID do Curso (Ex: Inteligência Artificial)
-let CURRENT_SCHEDULE_ID = 1; // ID do Horário (Ex: IA das 19:00)
+// Variáveis globais para estado
+let CURRENT_USER_ID = null;
+let CURRENT_ROOM_ID = 1;      // Ex: Sala 101 (Fixo por enquanto)
+let CURRENT_COURSE_ID = 1;    // Ex: Curso de IA (Fixo por enquanto)
+let CURRENT_SCHEDULE_ID = 1;  // Ex: Horário da segunda-feira às 19h (Fixo por enquanto)
 
 // --- SELETORES DO DOM ---
-// Guardamos os elementos em variáveis para não ter que buscá-los toda hora
 let lightSlider, lightSliderValue, acToggle, tempValue, tempPlusBtn, tempMinusBtn,
     agendaContainer, studentListContainer, confirmAttendanceBtn;
 
 // --- INICIALIZAÇÃO ---
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Selecionar todos os elementos da página
+    // 1. VERIFICAÇÃO DE LOGIN
+    const userJson = localStorage.getItem('user');
+    if (!userJson) {
+        alert('Você precisa fazer login primeiro!');
+        window.location.href = '../index.html';
+        return;
+    }
+    const user = JSON.parse(userJson);
+    if (user.role !== 'Professor') {
+        alert('Acesso negado: Área exclusiva para professores.');
+        window.location.href = '../index.html';
+        return;
+    }
+
+    // 2. DEFINE O ID DO USUÁRIO ATUAL
+    CURRENT_USER_ID = user.id;
+    console.log('Dashboard iniciada para Professor ID:', CURRENT_USER_ID);
+
+    // --- ATUALIZAÇÃO DA INTERFACE COM O NOME DO PROFESSOR ---
+    // Procura os elementos pelo ID e atualiza o texto
+    const userNameSidebar = document.getElementById('user-name');
+    const userWelcomeHeader = document.getElementById('user-welcome');
+    // Se você quiser também atualizar a foto, precisaria ter a URL dela no 'user'
+    // const userAvatar = document.querySelector('[data-alt="Foto de perfil do professor"]');
+
+    if (userNameSidebar) userNameSidebar.textContent = user.name;
+    if (userWelcomeHeader) userWelcomeHeader.textContent = `Bem-vindo(a), ${user.name}`;
+    // -------------------------------------------------------
+
+    // 3. SELETORES DO DOM
     lightSlider = document.getElementById('light-slider');
     lightSliderValue = document.getElementById('light-slider-value');
     acToggle = document.getElementById('ac-toggle');
@@ -28,58 +55,53 @@ document.addEventListener('DOMContentLoaded', () => {
     studentListContainer = document.getElementById('student-list-container');
     confirmAttendanceBtn = document.getElementById('confirm-attendance-btn');
 
-    // 2. Carregar os dados iniciais da API
+    // 4. CARREGAR DADOS
     loadPageData();
 
-    // 3. Adicionar "escutadores" de eventos para o Controle da Sala
-    // Usamos 'input' para o slider para pegar o valor enquanto arrasta
-    lightSlider.addEventListener('input', (e) => {
-        lightSliderValue.textContent = `${e.target.value}%`;
-    });
-    // Usamos 'change' para enviar o valor final quando o usuário soltar o mouse
-    lightSlider.addEventListener('change', sendRoomUpdate);
+    // 5. EVENT LISTENERS (Controles da Sala)
+    if (lightSlider) {
+        lightSlider.addEventListener('input', (e) => {
+            if (lightSliderValue) lightSliderValue.textContent = `${e.target.value}%`;
+        });
+        lightSlider.addEventListener('change', sendRoomUpdate);
+    }
 
-    // Eventos para os botões de rádio da Iluminação
     document.querySelectorAll('input[name="lighting-scene"]').forEach(radio => {
         radio.addEventListener('change', sendRoomUpdate);
     });
 
-    acToggle.addEventListener('change', sendRoomUpdate);
+    if (acToggle) acToggle.addEventListener('change', sendRoomUpdate);
 
-    tempPlusBtn.addEventListener('click', () => {
-        let currentTemp = parseInt(tempValue.textContent);
-        tempValue.textContent = `${++currentTemp}°C`;
-        sendRoomUpdate();
-    });
+    if (tempPlusBtn && tempValue) {
+        tempPlusBtn.addEventListener('click', () => {
+            let currentTemp = parseInt(tempValue.textContent);
+            tempValue.textContent = `${++currentTemp}°C`;
+            sendRoomUpdate();
+        });
+    }
 
-    tempMinusBtn.addEventListener('click', () => {
-        let currentTemp = parseInt(tempValue.textContent);
-        tempValue.textContent = `${--currentTemp}°C`;
-        sendRoomUpdate();
-    });
+    if (tempMinusBtn && tempValue) {
+        tempMinusBtn.addEventListener('click', () => {
+            let currentTemp = parseInt(tempValue.textContent);
+            tempValue.textContent = `${--currentTemp}°C`;
+            sendRoomUpdate();
+        });
+    }
 
-    // 4. Adicionar "escutador" para o botão de Presença
-    confirmAttendanceBtn.addEventListener('click', confirmAttendance);
+    if (confirmAttendanceBtn) {
+        confirmAttendanceBtn.addEventListener('click', confirmAttendance);
+    }
 });
 
 // --- FUNÇÕES DE CARREGAMENTO (GET) ---
 
-/**
- * Função principal que carrega todos os dados da página
- */
 async function loadPageData() {
-    // TODO: Adicionar lógica para buscar qual é a aula atual
-    // e definir CURRENT_ROOM_ID, CURRENT_COURSE_ID, etc., dinamicamente.
-
-    // Por enquanto, usamos os IDs "chumbados"
+    if (!CURRENT_USER_ID) return;
     loadInitialRoomState(CURRENT_ROOM_ID);
     loadSchedule(CURRENT_USER_ID);
     loadStudentList(CURRENT_COURSE_ID);
 }
 
-/**
- * Carrega o estado inicial da sala (Luz, AC, Temp)
- */
 async function loadInitialRoomState(roomId) {
     try {
         const response = await fetch(`${API_URL}/rooms/${roomId}`);
@@ -87,55 +109,48 @@ async function loadInitialRoomState(roomId) {
 
         const room = await response.json();
 
-        // Popula o Card "Controle da Sala"
-        lightSlider.value = room.lighting_intensity || 60;
-        lightSliderValue.textContent = `${room.lighting_intensity || 60}%`;
-
-        acToggle.checked = !!room.ac_on; // Converte 1/0 para true/false
-        tempValue.textContent = `${room.ac_temperature || 22}°C`;
-
-        // TODO: Marcar o rádio da iluminação (ex: 'Presentation', 'Reading')
-        // Você precisaria salvar esse 'scene' no seu banco de dados.
+        if (lightSlider) lightSlider.value = room.lighting_intensity || 60;
+        if (lightSliderValue) lightSliderValue.textContent = `${room.lighting_intensity || 60}%`;
+        if (acToggle) acToggle.checked = !!room.ac_on;
+        if (tempValue) tempValue.textContent = `${room.ac_temperature || 22}°C`;
 
     } catch (error) {
         console.error('Erro ao carregar estado da sala:', error);
     }
 }
 
-/**
- * Carrega a agenda do professor
- */
 async function loadSchedule(professorId) {
     try {
-        // NOTA: Sua rota /api/schedules busca TUDO. O ideal seria criar
-        // uma rota /api/schedules/professor/:id
         const response = await fetch(`${API_URL}/schedules`);
         if (!response.ok) throw new Error('Erro ao buscar agenda');
 
-        const schedules = await response.json();
+        const allSchedules = await response.json();
+        // Filtra a agenda para mostrar SOMENTE a do professor logado
+        const mySchedules = allSchedules.filter(s => s.professor_id === professorId);
 
-        // Filtra a agenda (temporário, o back-end deveria fazer isso)
-        // Esta é uma suposição de como seus dados se parecem.
-        // const professorSchedules = schedules.filter(s => s.professor_id === professorId);
+        if (!agendaContainer) return;
+        agendaContainer.innerHTML = '';
 
-        agendaContainer.innerHTML = ''; // Limpa o "Carregando..."
+        if (mySchedules.length === 0) {
+            agendaContainer.innerHTML = '<p class="text-gray-500 dark:text-gray-400 text-center py-4">Nenhuma aula agendada para hoje.</p>';
+            return;
+        }
 
-        schedules.forEach(item => {
-            // TODO: Adicionar lógica para destacar a aula "Atual"
-            const isAtual = item.course_name === 'Inteligência Artificial'; // Exemplo
+        mySchedules.forEach(item => {
+            // Lógica simplificada para destacar a aula "atual" (primeira da lista)
+            const isAtual = (item.course_id === CURRENT_COURSE_ID); 
 
             const scheduleHtml = `
-            <div class="flex items-center gap-4 p-4 rounded-lg ${isAtual ? 'bg-primary/20 ring-2 ring-primary' : 'bg-background-light dark:bg-background-dark'}">
-              <div class="flex flex-col items-center justify-center w-16 ${isAtual ? 'text-primary' : 'text-gray-500 dark:text-gray-400'}">
-                <span class="text-sm font-medium ${isAtual ? 'font-bold' : ''}">${item.start_time}</span>
-                <span class="text-xs">${item.end_time}</span>
+            <div class="flex items-center gap-4 p-4 rounded-lg ${isAtual ? 'bg-primary/10 ring-2 ring-primary dark:bg-primary/20' : 'bg-gray-50 dark:bg-gray-700/50'} shadow-sm transition-all">
+              <div class="flex flex-col items-center justify-center min-w-[4rem] ${isAtual ? 'text-primary font-bold' : 'text-gray-500 dark:text-gray-400'}">
+                <span class="text-sm">${item.start_time.substring(0, 5)}</span>
+                <span class="text-xs opacity-75">${item.end_time.substring(0, 5)}</span>
               </div>
               <div class="w-1 ${isAtual ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-600'} h-10 rounded-full"></div>
-              <div>
-                <h3 class="font-bold text-gray-800 dark:text-white">${item.course_name}</h3>
-                <p class="text-sm text-gray-500 dark:text-gray-400">${item.room_name}</p>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-bold text-gray-800 dark:text-white truncate">${item.course_name}</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 truncate">${item.room_name} • ${item.day_of_week}</p>
               </div>
-              ${isAtual ? '<span class="ml-auto px-2 py-1 text-xs font-semibold text-yellow-800 bg-yellow-200 rounded-full">Atual</span>' : ''}
             </div>
             `;
             agendaContainer.innerHTML += scheduleHtml;
@@ -143,12 +158,10 @@ async function loadSchedule(professorId) {
 
     } catch (error) {
         console.error('Erro ao carregar agenda:', error);
+        if (agendaContainer) agendaContainer.innerHTML = '<p class="text-red-500 text-center">Erro ao carregar agenda.</p>';
     }
 }
 
-/**
- * Carrega a lista de alunos matriculados no curso atual
- */
 async function loadStudentList(courseId) {
     try {
         const response = await fetch(`${API_URL}/enrollments/course/${courseId}`);
@@ -156,24 +169,34 @@ async function loadStudentList(courseId) {
 
         const students = await response.json();
 
-        studentListContainer.innerHTML = ''; // Limpa o "Carregando..."
+        if (!studentListContainer) return;
+        studentListContainer.innerHTML = '';
 
         if (students.length === 0) {
-            studentListContainer.innerHTML = '<p class="text-gray-500 text-center">Nenhum aluno matriculado neste curso.</p>';
+            studentListContainer.innerHTML = '<p class="text-gray-500 dark:text-gray-400 text-center py-4">Nenhum aluno matriculado.</p>';
             return;
         }
 
-        students.forEach((student, index) => {
+        students.forEach((student) => {
+            // Adiciona um ID único para cada grupo de radio buttons usando o ID do aluno
+            const radioGroupName = `student_${student.student_id}`;
+            
             const studentHtml = `
-            <div class="flex items-center justify-between p-3 rounded-lg bg-background-light dark:bg-background-dark" data-student-id="${student.student_id || index}"> <p class="text-gray-800 dark:text-white">${student.student_name}</p>
-              <div class="flex items-center gap-2">
-                <label class="flex items-center cursor-pointer">
-                  <input class="form-radio text-primary focus:ring-primary/50" name="student_${index}" type="radio" value="Presente" checked /> 
-                  <span class="ml-2 text-sm text-gray-600 dark:text-gray-300">P</span>
+            <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" data-student-id="${student.student_id}">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
+                  ${student.student_name.charAt(0)}
+                </div>
+                <p class="font-medium text-gray-800 dark:text-white truncate">${student.student_name}</p>
+              </div>
+              <div class="flex items-center gap-4 flex-shrink-0 ml-4">
+                <label class="flex items-center cursor-pointer group">
+                  <input class="form-radio w-4 h-4 text-green-600 focus:ring-green-500 transition-all" type="radio" name="${radioGroupName}" value="Presente" checked />
+                  <span class="ml-2 text-sm font-medium text-gray-600 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white">P</span>
                 </label>
-                <label class="flex items-center cursor-pointer">
-                  <input class="form-radio text-red-500 focus:ring-red-500/50" name="student_${index}" type="radio" value="Ausente" /> 
-                  <span class="ml-2 text-sm text-gray-600 dark:text-gray-300">A</span>
+                <label class="flex items-center cursor-pointer group">
+                  <input class="form-radio w-4 h-4 text-red-600 focus:ring-red-500 transition-all" type="radio" name="${radioGroupName}" value="Ausente" />
+                  <span class="ml-2 text-sm font-medium text-gray-600 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white">A</span>
                 </label>
               </div>
             </div>
@@ -183,99 +206,85 @@ async function loadStudentList(courseId) {
 
     } catch (error) {
         console.error('Erro ao carregar lista de alunos:', error);
-        studentListContainer.innerHTML = '<p class="text-red-500 text-center">Erro ao carregar alunos.</p>';
+        if (studentListContainer) studentListContainer.innerHTML = '<p class="text-red-500 text-center">Erro ao carregar lista.</p>';
     }
 }
 
-
 // --- FUNÇÕES DE ATUALIZAÇÃO (PUT/POST) ---
 
-/**
- * Envia o estado ATUAL do "Controle da Sala" para o back-end
- */
 async function sendRoomUpdate() {
+    if (!CURRENT_ROOM_ID) return;
+    
     try {
-        // 1. Coletar todos os dados do card
-        const intensity = lightSlider.value;
-        const temp = parseInt(tempValue.textContent);
-        const acOn = acToggle.checked;
-        const lightScene = document.querySelector('input[name="lighting-scene"]:checked').value;
+        const intensity = lightSlider ? lightSlider.value : 0;
+        const temp = tempValue ? parseInt(tempValue.textContent) : 22;
+        const acOn = acToggle ? acToggle.checked : false;
 
-        // 2. Montar o objeto
         const roomData = {
             lighting_intensity: intensity,
             ac_temperature: temp,
             ac_on: acOn,
-            status: 'Em Aula', // <--- CORRIGIDO
-            current_course_id: CURRENT_COURSE_ID 
+            status: 'Em Aula',
+            current_course_id: CURRENT_COURSE_ID
         };
 
-        // 3. Enviar a requisição PUT
         const response = await fetch(`${API_URL}/rooms/status/${CURRENT_ROOM_ID}`, {
             method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(roomData),
         });
 
-        if (!response.ok) {
-            throw new Error('Falha ao atualizar a sala');
-        }
-
-        const result = await response.json();
-        console.log('Sala atualizada:', result.message);
+        if (!response.ok) throw new Error('Falha ao atualizar sala');
+        // console.log('Sala atualizada'); // Opcional
 
     } catch (error) {
         console.error('Erro em sendRoomUpdate:', error);
     }
 }
 
-/**
- * Pega a lista de presença da tela e envia para o back-end
- */
 async function confirmAttendance() {
+    if (!CURRENT_SCHEDULE_ID || !studentListContainer) return;
+
     try {
         const attendance_list = [];
-
-        // Encontra todas as linhas de aluno
         const studentRows = studentListContainer.querySelectorAll('div[data-student-id]');
 
         studentRows.forEach(row => {
             const student_id = row.getAttribute('data-student-id');
-            const status = row.querySelector('input[type="radio"]:checked').value; // 'Presente' ou 'Ausente'
-
-            attendance_list.push({
-                student_id: parseInt(student_id),
-                status: status
-            });
+            // Busca o radio button selecionado DENTRO da linha do aluno específico
+            const selectedRadio = row.querySelector(`input[name="student_${student_id}"]:checked`);
+            
+            if (selectedRadio) {
+                 attendance_list.push({
+                    student_id: parseInt(student_id),
+                    status: selectedRadio.value
+                });
+            }
         });
 
-        // Monta o payload final
+        if (attendance_list.length === 0) {
+            alert('Nenhum aluno encontrado para confirmar presença.');
+            return;
+        }
+
         const payload = {
             schedule_id: CURRENT_SCHEDULE_ID,
             attendance_list: attendance_list
         };
 
-        // Envia para a NOVA rota de bulk
         const response = await fetch(`${API_URL}/attendance/manual-bulk`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
         });
 
-        if (!response.ok) {
-            throw new Error('Falha ao confirmar presença');
-        }
+        if (!response.ok) throw new Error('Falha ao confirmar presença');
 
         const result = await response.json();
-        console.log('Presença confirmada:', result.message);
         alert('Presença confirmada com sucesso!');
 
     } catch (error) {
         console.error('Erro em confirmAttendance:', error);
-        alert('Erro ao confirmar presença. Veja o console.');
+        alert('Erro ao confirmar presença. Verifique o console.');
     }
 }
