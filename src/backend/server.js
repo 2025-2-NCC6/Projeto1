@@ -1,4 +1,3 @@
-// --- server.js (Versão Completa e Segura) ---
 
 // 1. Importar as bibliotecas
 const express = require('express');
@@ -237,19 +236,19 @@ app.put('/api/rooms/status/:id', (req, res) => {
   const acOnValue = ac_on === true ? 1 : (ac_on === false ? 0 : null);
 
   const sql = `UPDATE Rooms SET 
-               status = COALESCE(?, status), 
-               current_course_id = COALESCE(?, current_course_id), 
-               lighting_intensity = COALESCE(?, lighting_intensity), 
-               ac_temperature = COALESCE(?, ac_temperature), 
-               ac_on = COALESCE(?, ac_on)
+              status = COALESCE(?, status), 
+              current_course_id = COALESCE(?, current_course_id), 
+              lighting_intensity = COALESCE(?, lighting_intensity), 
+              ac_temperature = COALESCE(?, ac_temperature), 
+              ac_on = COALESCE(?, ac_on)
              WHERE id = ?`;
   const params = [
-      status, 
-      current_course_id, 
-      lighting_intensity, 
-      ac_temperature, 
-      acOnValue, 
-      req.params.id
+     status, 
+     current_course_id, 
+     lighting_intensity, 
+     ac_temperature, 
+     acOnValue, 
+     req.params.id
   ];
   db.run(sql, params, function (err) {
     if (err) return res.status(500).json({ error: err.message });
@@ -557,7 +556,128 @@ app.get('/api/metrics/attendance/overall', (req, res) => {
 });
 
 
-// --- 6. Iniciar o Servidor ---
+// --- 6. NOVAS ROTAS DE INTEGRAÇÃO RFID (ARDUINO) ---
+
+/**
+ * Converte o dia da semana (número) para o texto usado no DB
+ */
+function getDiaSemanaTexto() {
+  const dias = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+  return dias[new Date().getDay()];
+}
+
+/**
+ * Pega a hora atual no formato "HH:MM"
+ */
+function getHoraAtual() {
+  // Ajuste para o fuso horário local se necessário, ex: GMT-3
+  const data = new Date();
+  const h = data.getHours().toString().padStart(2, '0');
+  const m = data.getMinutes().toString().padStart(2, '0');
+  return `${h}:${m}`;
+}
+
+
+// ROTA 1: Professor inicia a aula
+app.post('/api/rfid/iniciar-aula', (req, res) => {
+  const { rfid_tag_id } = req.body;
+
+  if (!rfid_tag_id) {
+    return res.status(400).json({ error: 'rfid_tag_id é obrigatório.' });
+  }
+
+  // 1. Encontra o professor pela tag
+  const sqlProf = "SELECT * FROM Users WHERE rfid_tag_id = ? AND role = 'Professor'";
+  db.get(sqlProf, [rfid_tag_id], (err, prof) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (!prof) return res.status(404).json({ error: 'Professor não encontrado para esta tag.' });
+
+    // 2. Encontra a aula atual desse professor
+    const dia = getDiaSemanaTexto();
+    const hora = getHoraAtual();
+    
+    // Corrigido: Busca pelo ID do professor na tabela Courses e depois Schedules
+    const sqlSchedule = `
+      SELECT s.* FROM Schedules s
+      JOIN Courses c ON s.course_id = c.id
+      WHERE c.professor_id = ? 
+      AND s.day_of_week = ? 
+      AND s.start_time <= ? 
+      AND s.end_time >= ?`;
+    
+    db.get(sqlSchedule, [prof.id, dia, hora, hora], (err, schedule) => {
+      if (err) return res.status(500).json({ error: `Erro ao buscar agenda: ${err.message}` });
+      if (!schedule) return res.status(404).json({ error: `Nenhuma aula encontrada para ${prof.name} agora (${dia} ${hora}).` });
+
+      // 3. Atualiza o status da sala
+      const sqlUpdateRoom = "UPDATE Rooms SET status = ?, current_course_id = ? WHERE id = ?";
+      db.run(sqlUpdateRoom, ['Em Aula', schedule.course_id, schedule.room_id], function(err) {
+        if (err) return res.status(500).json({ error: `Erro ao atualizar sala: ${err.message}` });
+        
+        console.log(`[RFID] Aula iniciada pelo Prof. ${prof.name} na Sala ID ${schedule.room_id}`);
+        res.status(200).json({
+          message: 'Aula iniciada com sucesso!',
+          professor: prof.name,
+          room_id: schedule.room_id,
+          course_id: schedule.course_id
+        });
+      });
+    });
+  });
+});
+
+
+// ROTA 2: Aluno registra presença
+app.post('/api/rfid/marcar-presenca', (req, res) => {
+  const { rfid_tag_id, room_id } = req.body;
+
+  if (!rfid_tag_id || room_id == null) {
+    return res.status(400).json({ error: 'rfid_tag_id e room_id são obrigatórios.' });
+  }
+
+  // 1. Encontra o aluno pela tag
+  const sqlStudent = "SELECT * FROM Users WHERE rfid_tag_id = ? AND role = 'Aluno'";
+  db.get(sqlStudent, [rfid_tag_id], (err, student) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (!student) return res.status(404).json({ error: 'Aluno não encontrado para esta tag.' });
+
+    // 2. Encontra a aula ativa NAQUELA SALA
+    const dia = getDiaSemanaTexto();
+    const hora = getHoraAtual();
+    const sqlSchedule = `
+      SELECT id FROM Schedules 
+      WHERE room_id = ? 
+      AND day_of_week = ? 
+      AND start_time <= ? 
+      AND end_time >= ?`;
+
+    db.get(sqlSchedule, [room_id, dia, hora, hora], (err, schedule) => {
+      if (err) return res.status(500).json({ error: `Erro ao buscar agenda: ${err.message}` });
+      if (!schedule) return res.status(404).json({ error: 'Nenhuma aula ativa encontrada nesta sala agora.' });
+
+      // 3. Insere (ou atualiza) o registro de presença
+      // Usamos "INSERT OR REPLACE" para o caso do aluno passar a tag 2x
+      const sqlInsert = `
+        INSERT OR REPLACE INTO AttendanceRecords 
+        (student_id, schedule_id, scan_timestamp, status) 
+        VALUES (?, ?, ?, ?)`;
+      
+      const timestamp = new Date().toISOString();
+      db.run(sqlInsert, [student.id, schedule.id, timestamp, 'Presente'], function(err) {
+        if (err) return res.status(500).json({ error: `Erro ao inserir presença: ${err.message}` });
+        
+        console.log(`[RFID] Presença registrada: ${student.name} na Aula ID ${schedule.id}`);
+        res.status(201).json({
+          message: 'Presença registrada!',
+          aluno: student.name
+        });
+      });
+    });
+  });
+});
+
+
+// --- 7. Iniciar o Servidor ---
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
   console.log(`Testando em http://localhost:${PORT}`);
