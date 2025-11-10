@@ -380,6 +380,7 @@ bool lerBloco(byte b, byte* buf, byte s) {
   MFRC522::MIFARE_Key k; for (byte i=0; i<6; i++) k.keyByte[i]=0xFF;
   if (mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, (b/4)*4+3, &k, &(mfrc522.uid)) != MFRC522::STATUS_OK) return false;
   return (mfrc522.MIFARE_Read(b, buf, &s) == MFRC522::STATUS_OK);
+}
 
 
 bool escreverBloco(byte b, byte* d) {
