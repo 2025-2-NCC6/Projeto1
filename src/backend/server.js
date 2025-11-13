@@ -678,7 +678,8 @@ app.post('/api/rfid/marcar-presenca', (req, res) => {
 
 
 // --- 7. Iniciar o Servidor ---
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Servidor rodando na porta ${PORT}`);
   console.log(`Testando em http://localhost:${PORT}`);
+  console.log(`Acessível na sua rede local em http://192.168.0.160:${PORT}`); //! colocar o ip da sua maquina aqui
 });
