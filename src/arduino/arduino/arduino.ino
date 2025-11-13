@@ -28,8 +28,8 @@
 #define RST_PIN 9
 #define SS_PIN 53
 #define BLOCO_DADOS 1
-#define BTN_ESQUERDA_PIN 28
-#define BTN_DIREITA_PIN 29
+#define BTN_ESQUERDA_PIN 38
+#define BTN_DIREITA_PIN 37
 const int PINO_IR1 = A3;
 const int PINO_IR2 = A2;
 const int PINO_RELE_OCUPADO = 4;
@@ -60,7 +60,7 @@ String nomesLocais[] = {
   "Carteira B1", "Carteira B2", "Carteira B3",
   "Carteira C1", "Carteira C2", "Carteira C3"
 };
-const int PINOS_LEDS[] = {39, 40, 30, 31, 32, 33, 34, 35, 36, 37, 38};
+const int PINOS_LEDS[] = {49, 48,47,46,45,44,43,42,41,40,39};
 
 // --- FEEDBACK ---
 enum TipoFeedback { FEEDBACK_NENHUM, FEEDBACK_PORTA_DESTINO, FEEDBACK_OK, FEEDBACK_ERRO };
