@@ -203,6 +203,8 @@ app.get('/api/rooms', (req, res) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(rows);
   });
+  // mostrar a origem da req
+  console.log(req.headers['user-agent']);
 });
 
 // ### ROTA NOVA (para Painel Admin) ###
@@ -581,6 +583,7 @@ function getHoraAtual() {
 // ROTA 1: Professor inicia a aula
 app.post('/api/rfid/iniciar-aula', (req, res) => {
   const { rfid_tag_id } = req.body;
+  console.log("Iniciar aula")
 
   if (!rfid_tag_id) {
     return res.status(400).json({ error: 'rfid_tag_id é obrigatório.' });
@@ -630,6 +633,7 @@ app.post('/api/rfid/iniciar-aula', (req, res) => {
 // ROTA 2: Aluno registra presença
 app.post('/api/rfid/marcar-presenca', (req, res) => {
   const { rfid_tag_id, room_id } = req.body;
+  
 
   if (!rfid_tag_id || room_id == null) {
     return res.status(400).json({ error: 'rfid_tag_id e room_id são obrigatórios.' });
@@ -681,5 +685,5 @@ app.post('/api/rfid/marcar-presenca', (req, res) => {
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Servidor rodando na porta ${PORT}`);
   console.log(`Testando em http://localhost:${PORT}`);
-  console.log(`Acessível na sua rede local em http://192.168.0.160:${PORT}`); //! colocar o ip da sua maquina aqui
+  console.log(`Acessível na sua rede local em http://192.168.0.172:${PORT}`); //! colocar o ip da sua maquina aqui
 });
