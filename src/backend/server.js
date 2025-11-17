@@ -14,6 +14,11 @@ app.use(express.json());
 const PORT = 4000;
 const dbPath = path.join(__dirname, 'automacao.db');
 
+// LOG DE DIAGNÓSTICO: MOSTRAR O CAMINHO ABSOLUTO DO BANCO DE DADOS
+console.log('--- [DIAGNÓSTICO DE BANCO DE DADOS] ---');
+console.log(`O servidor está tentando ler o banco de dados em: ${dbPath}`);
+console.log('-------------------------------------------');
+
 // 3. Conectar ao Banco de Dados
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
@@ -209,16 +214,26 @@ app.get('/api/rooms', (req, res) => {
 
 // ### ROTA NOVA (para Painel Admin) ###
 app.get('/api/rooms/detailed', (req, res) => {
+    const dia = getDiaSemanaNumero();
+    const hora = getHoraAtual();
+
     const sql = `
         SELECT 
             r.*,
             c.name as course_name,
-            u.name as professor_name
+            u.name as professor_name,
+            -- Sub-query para encontrar o schedule_id da aula que está acontecendo AGORA nesta sala
+            (SELECT s.id FROM Schedules s 
+             WHERE s.room_id = r.id 
+             AND s.day_of_week = ? 
+             AND s.start_time <= ? 
+             AND s.end_time >= ?) as current_schedule_id
         FROM Rooms r
         LEFT JOIN Courses c ON r.current_course_id = c.id
         LEFT JOIN Users u ON c.professor_id = u.id
     `;
-    db.all(sql, [], (err, rows) => {
+    // Passamos os parâmetros de dia e hora para a sub-query
+    db.all(sql, [dia, hora, hora], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
     });
@@ -557,78 +572,134 @@ app.get('/api/metrics/attendance/overall', (req, res) => {
     });
 });
 
+// NOVA ROTA: Verifica e finaliza aulas cujo tempo já expirou
+app.post('/api/rooms/update-state', (req, res) => {
+    const sql = `
+        UPDATE Rooms
+        SET status = 'Livre', current_course_id = NULL
+        WHERE status = 'Em Aula' AND id IN (
+            SELECT s.room_id FROM Schedules s
+            WHERE s.course_id = Rooms.current_course_id
+              AND s.day_of_week = CAST(strftime('%w', 'now', 'localtime') AS INTEGER)
+              AND s.end_time < time('now', 'localtime')
+        )
+    `;
+    db.run(sql, [], function(err) {
+        if (err) {
+            return res.status(500).json({ error: `Erro ao atualizar estado das salas: ${err.message}` });
+        }
+        if (this.changes > 0) {
+            console.log(`[AUTO] ${this.changes} aula(s) finalizada(s) automaticamente.`);
+        }
+        // Sempre retorna sucesso, pois esta é uma tarefa de manutenção
+        res.status(200).json({ message: 'Verificação de estado concluída.', changes: this.changes });
+    });
+});
+
+// ROTA DE DEBUG: Para verificar a hora do banco de dados
+app.get('/api/debug/time', (req, res) => {
+    const sql = "SELECT time('now', 'localtime') as db_time, CAST(strftime('%w', 'now', 'localtime') AS INTEGER) as db_day";
+    db.get(sql, [], (err, row) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        res.json({
+            message: "Hora atual segundo o banco de dados SQLite",
+            database_time: row.db_time,
+            database_day_of_week: row.db_day,
+            server_nodejs_time: new Date().toLocaleTimeString('pt-BR', { hour12: false })
+        });
+    });
+});
 
 // --- 6. NOVAS ROTAS DE INTEGRAÇÃO RFID (ARDUINO) ---
 
 /**
  * Converte o dia da semana (número) para o texto usado no DB
  */
-function getDiaSemanaTexto() {
-  const dias = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
-  return dias[new Date().getDay()];
+function getDiaSemanaNumero() {
+  return new Date().getDay();
 }
 
 /**
  * Pega a hora atual no formato "HH:MM"
  */
 function getHoraAtual() {
-  // Ajuste para o fuso horário local se necessário, ex: GMT-3
   const data = new Date();
   const h = data.getHours().toString().padStart(2, '0');
   const m = data.getMinutes().toString().padStart(2, '0');
-  return `${h}:${m}`;
+  const s = data.getSeconds().toString().padStart(2, '0'); // <-- ADICIONADO
+  return `${h}:${m}:${s}`; // <-- FORMATO ALTERADO
 }
 
 
 // ROTA 1: Professor inicia a aula
+// Em server.js, dentro da rota app.post('/api/rfid/iniciar-aula', ...)
+
 app.post('/api/rfid/iniciar-aula', (req, res) => {
-  const { rfid_tag_id } = req.body;
-  console.log("Iniciar aula")
+    const { rfid_tag_id } = req.body;
+    if (!rfid_tag_id) return res.status(400).json({ error: 'rfid_tag_id é obrigatório.' });
 
-  if (!rfid_tag_id) {
-    return res.status(400).json({ error: 'rfid_tag_id é obrigatório.' });
-  }
+    const sqlProf = "SELECT * FROM Users WHERE rfid_tag_id = ? AND role = 'Professor'";
+    db.get(sqlProf, [rfid_tag_id], (err, prof) => {
+        if (err || !prof) return res.status(404).json({ error: 'Professor não encontrado para esta tag.' });
 
-  // 1. Encontra o professor pela tag
-  const sqlProf = "SELECT * FROM Users WHERE rfid_tag_id = ? AND role = 'Professor'";
-  db.get(sqlProf, [rfid_tag_id], (err, prof) => {
-    if (err) return res.status(500).json({ error: err.message });
-    if (!prof) return res.status(404).json({ error: 'Professor não encontrado para esta tag.' });
+        const dia = getDiaSemanaNumero();
 
-    // 2. Encontra a aula atual desse professor
-    const dia = getDiaSemanaTexto();
-    const hora = getHoraAtual();
-    
-    // Corrigido: Busca pelo ID do professor na tabela Courses e depois Schedules
-    const sqlSchedule = `
-      SELECT s.* FROM Schedules s
-      JOIN Courses c ON s.course_id = c.id
-      WHERE c.professor_id = ? 
-      AND s.day_of_week = ? 
-      AND s.start_time <= ? 
-      AND s.end_time >= ?`;
-    
-    db.get(sqlSchedule, [prof.id, dia, hora, hora], (err, schedule) => {
-      if (err) return res.status(500).json({ error: `Erro ao buscar agenda: ${err.message}` });
-      if (!schedule) return res.status(404).json({ error: `Nenhuma aula encontrada para ${prof.name} agora (${dia} ${hora}).` });
-
-      // 3. Atualiza o status da sala
-      const sqlUpdateRoom = "UPDATE Rooms SET status = ?, current_course_id = ? WHERE id = ?";
-      db.run(sqlUpdateRoom, ['Em Aula', schedule.course_id, schedule.room_id], function(err) {
-        if (err) return res.status(500).json({ error: `Erro ao atualizar sala: ${err.message}` });
+        const sqlSchedule = `
+            SELECT s.* FROM Schedules s
+            JOIN Courses c ON s.course_id = c.id
+            WHERE c.professor_id = ? AND s.day_of_week = ?
+            ORDER BY s.start_time`;
         
-        console.log(`[RFID] Aula iniciada pelo Prof. ${prof.name} na Sala ID ${schedule.room_id}`);
-        res.status(200).json({
-          message: 'Aula iniciada com sucesso!',
-          professor: prof.name,
-          room_id: schedule.room_id,
-          course_id: schedule.course_id
-        });
-      });
-    });
-  });
-});
+        // --- ALTERAÇÃO PRINCIPAL AQUI ---
+        // Vamos forçar a conversão para Número para garantir que o driver não se confunda.
+        const params = [Number(prof.id), Number(dia)];
 
+        // LOG FINAL: Vamos ver exatamente o que está sendo executado.
+        console.log(`[LOG FINAL] Executando query: \n${sqlSchedule.replace(/\s\s+/g, ' ')}\nCom parâmetros:`, params);
+
+        db.all(sqlSchedule, params, (err, aulasDoDia) => {
+            if (err) return res.status(500).json({ error: `Erro ao buscar agenda: ${err.message}` });
+            
+            // Log para ver o que o banco retornou
+            console.log('[LOG FINAL] Resultado da query (aulasDoDia):', aulasDoDia);
+
+            if (!aulasDoDia || aulasDoDia.length === 0) {
+                return res.status(404).json({ error: `Nenhuma aula agendada para ${prof.name} hoje.` });
+            }
+
+            // O resto da lógica para encontrar a aula atual e iniciar continua a mesma...
+            const agora = new Date();
+            const schedule = aulasDoDia.find(aula => {
+                const inicio = new Date();
+                const [startH, startM, startS] = aula.start_time.split(':');
+                inicio.setHours(startH, startM, startS);
+
+                const fim = new Date();
+                const [endH, endM, endS] = aula.end_time.split(':');
+                fim.setHours(endH, endM, endS);
+
+                return agora >= inicio && agora <= fim;
+            });
+
+            if (!schedule) {
+                const horaDebug = agora.toLocaleTimeString('pt-BR', { hour12: false });
+                return res.status(404).json({ error: `Nenhuma aula agendada para ${prof.name} neste exato momento (${horaDebug}).` });
+            }
+
+            const sqlUpdateRoom = "UPDATE Rooms SET status = 'Em Aula', current_course_id = ? WHERE id = ?";
+            db.run(sqlUpdateRoom, [schedule.course_id, schedule.room_id], function(err) {
+                if (err) return res.status(500).json({ error: `Erro ao atualizar sala: ${err.message}` });
+                console.log(`[RFID] Aula iniciada pelo Prof. ${prof.name} na Sala ID ${schedule.room_id}`);
+                res.status(200).json({
+                    message: 'Aula iniciada com sucesso!',
+                    schedule: schedule
+                });
+            });
+        });
+    });
+});
 
 // ROTA 2: Aluno registra presença
 app.post('/api/rfid/marcar-presenca', (req, res) => {
@@ -646,16 +717,17 @@ app.post('/api/rfid/marcar-presenca', (req, res) => {
     if (!student) return res.status(404).json({ error: 'Aluno não encontrado para esta tag.' });
 
     // 2. Encontra a aula ativa NAQUELA SALA
-    const dia = getDiaSemanaTexto();
-    const hora = getHoraAtual();
+    const dia = getDiaSemanaNumero();
+    // A query agora usa a função time() do próprio SQLite.
     const sqlSchedule = `
       SELECT id FROM Schedules 
       WHERE room_id = ? 
       AND day_of_week = ? 
-      AND start_time <= ? 
-      AND end_time >= ?`;
+      AND start_time <= time('now', 'localtime') 
+      AND end_time >= time('now', 'localtime')`;
 
-    db.get(sqlSchedule, [room_id, dia, hora, hora], (err, schedule) => {
+    // Note que agora passamos apenas o room_id e o dia.
+    db.get(sqlSchedule, [room_id, dia], (err, schedule) => {
       if (err) return res.status(500).json({ error: `Erro ao buscar agenda: ${err.message}` });
       if (!schedule) return res.status(404).json({ error: 'Nenhuma aula ativa encontrada nesta sala agora.' });
 

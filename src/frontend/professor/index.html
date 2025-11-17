@@ -232,13 +232,21 @@
             </button>
           </div>
         </div>
-        <div class="lg:col-span-1">
-          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-            <h2 class="text-gray-800 dark:text-white text-xl font-bold mb-4">Sua Agenda de Hoje</h2>
-            <div id="agenda-container" class="space-y-4">
-              <p class="text-gray-500 text-center">Carregando agenda...</p>
+        <div class="lg:col-span-1 flex flex-col gap-8">
+            <!-- Seção: Agenda de Hoje -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                <h2 class="text-gray-800 dark:text-white text-xl font-bold mb-4">Agenda de Hoje</h2>
+                <div id="agenda-hoje-container" class="space-y-4">
+                    <p class="text-gray-500 text-center">Carregando...</p>
+                </div>
             </div>
-          </div>
+            <!-- Seção: Próximas Aulas da Semana -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                <h2 class="text-gray-800 dark:text-white text-xl font-bold mb-4">Próximas Aulas da Semana</h2>
+                <div id="agenda-semana-container" class="space-y-4">
+                    <p class="text-gray-500 text-center">Carregando...</p>
+                </div>
+            </div>
         </div>
       </div>
     </main>
