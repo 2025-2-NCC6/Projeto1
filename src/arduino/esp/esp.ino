@@ -4,11 +4,11 @@
 #include <ArduinoJson.h>
 
 // --- CONFIGURAÇÕES DA REDE (ALTERE AQUI) ---
-const char* ssid = "BENETTI";
-const char* password = "lu040505";
+const char* ssid = "";
+const char* password = "";
 
 // --- CONFIGURAÇÕES DO SERVIDOR (ALTERE AQUI) ---
-const char* serverIP = "192.168.0.172"; // IP do computador rodando o servidor
+const char* serverIP = "10.55.21.223"; // IP do computador rodando o servidor
 const int serverPort = 4000;
 const int ROOM_ID = 1; // ID fixo desta sala
 const int led = 4;
